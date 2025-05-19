@@ -1,0 +1,34 @@
+<div class="login-wrapper">
+    <div class="brand-block">
+      <img src="assets/icon.svg" alt="App Icon" class="brand-icon" />
+      <h1 class="brand-text">Welcome</h1>
+    </div>
+  
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+      <mat-form-field class="input-box" appearance="fill">
+        <input matInput placeholder="username" formControlName="Email" />
+      </mat-form-field>
+  
+      <mat-form-field class="input-box" appearance="fill">
+        <input
+          matInput
+          [type]="hide ? 'password' : 'text'"
+          placeholder="password"
+          formControlName="Password"
+        />
+        <button mat-icon-button matSuffix (click)="hide = !hide" type="button">
+          <mat-icon>{{ hide ? 'visibility_off' : 'visibility' }}</mat-icon>
+        </button>
+      </mat-form-field>
+  
+      <button mat-raised-button color="primary" class="login-btn" [disabled]="loginForm.invalid">
+        log in
+      </button>
+    </form>
+  
+    <div class="footer-links">
+      <a href="#" class="footer-link">forgot password?</a>
+      <a routerLink="/signup" class="footer-link strong">sign up</a>
+    </div>
+  </div>
+  
