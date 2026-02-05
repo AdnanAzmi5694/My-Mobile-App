@@ -6,6 +6,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import { AuthService } from '../services/auth.service';
@@ -23,7 +24,8 @@ import { Router } from '@angular/router';
     MatButtonModule,
     MatCardModule,
     MatSnackBarModule,
-    MatIconModule
+    MatIconModule,
+    MatProgressSpinnerModule
   ],
   templateUrl: './signin.component.html',
   styleUrls: ['./signin.component.scss']
@@ -31,6 +33,7 @@ import { Router } from '@angular/router';
 export class SigninComponent {
   loginForm: FormGroup;
   hide = true;
+  isLoading = false;
 
   constructor(
     private fb: FormBuilder,
@@ -44,17 +47,32 @@ export class SigninComponent {
     });
   }
 
-  onSubmit() {
-    if (this.loginForm.valid) {
-      this.authService.login(this.loginForm.value).subscribe({
-        next: () => {
-          this.snackBar.open('Login successful', 'Close', { duration: 2000 });
-          this.router.navigate(['/dashboard']);
-        },
-        error: () => {
-          this.snackBar.open('Login failed', 'Close', { duration: 3000 });
-        }
-      });
-    }
+ onSubmit() {
+  if (this.loginForm.valid) {
+    this.isLoading = true;
+    this.authService.login(this.loginForm.value).subscribe({
+      next: () => {
+        this.snackBar.open('Login successful! Loading dashboard with last 15 days data...', 'Close', { 
+          duration: 3000,
+          panelClass: ['success-snackbar']
+        });
+        this.router.navigate(['/dashboard']);
+      },
+      error: (err: any) => {
+        const message =
+          err.error?.error || // custom error from server like { error: "Invalid credentials" }
+          err.error?.message || // fallback to common 'message' field
+          'Login Unsuccessful. Please try again.';
+
+        this.snackBar.open(message, 'Close', { 
+          duration: 4000,
+          panelClass: ['error-snackbar']
+        });
+      },
+      complete: () => {
+        this.isLoading = false;
+      }
+    });
   }
+}
 }

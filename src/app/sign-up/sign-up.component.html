@@ -1,1 +1,96 @@
-<p>sign-up works!</p>
+<div class="signup-wrapper">
+  <div class="brand-block">
+    <img src="assets/icon.svg" alt="App Icon" class="brand-icon" />
+    <h1 class="brand-text">Create Account</h1>
+    <p class="brand-subtitle">Join us today and get started</p>
+  </div>
+
+  <form [formGroup]="signupForm" (ngSubmit)="onSubmit()" class="signup-form">
+    <mat-form-field class="input-box" appearance="fill">
+      <mat-label>Username</mat-label>
+      <input matInput formControlName="Username" placeholder="Enter your username" />
+      <mat-error *ngIf="signupForm.get('Username')?.hasError('required') && signupForm.get('Username')?.touched">
+        Username is required
+      </mat-error>
+      <mat-error *ngIf="signupForm.get('Username')?.hasError('minlength')">
+        Username must be at least 3 characters
+      </mat-error>
+      <mat-error *ngIf="signupForm.get('Username')?.hasError('maxlength')">
+        Username must not exceed 50 characters
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field class="input-box" appearance="fill">
+      <mat-label>Email</mat-label>
+      <input matInput type="email" formControlName="Email" placeholder="Enter your email" />
+      <mat-error *ngIf="signupForm.get('Email')?.hasError('required') && signupForm.get('Email')?.touched">
+        Email is required
+      </mat-error>
+      <mat-error *ngIf="signupForm.get('Email')?.hasError('email')">
+        Please enter a valid email address
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field class="input-box" appearance="fill">
+      <mat-label>Password</mat-label>
+      <input
+        matInput
+        [type]="hidePassword ? 'password' : 'text'"
+        formControlName="Password"
+        placeholder="Enter your password"
+      />
+      <button mat-icon-button matSuffix (click)="hidePassword = !hidePassword" type="button">
+        <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+      </button>
+      <mat-error *ngIf="signupForm.get('Password')?.hasError('required') && signupForm.get('Password')?.touched">
+        Password is required
+      </mat-error>
+      <mat-error *ngIf="signupForm.get('Password')?.hasError('minlength')">
+        Password must be at least 6 characters
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field class="input-box" appearance="fill">
+      <mat-label>Confirm Password</mat-label>
+      <input
+        matInput
+        [type]="hideConfirmPassword ? 'password' : 'text'"
+        formControlName="ConfirmPassword"
+        placeholder="Confirm your password"
+      />
+      <button mat-icon-button matSuffix (click)="hideConfirmPassword = !hideConfirmPassword" type="button">
+        <mat-icon>{{ hideConfirmPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+      </button>
+      <mat-error *ngIf="signupForm.get('ConfirmPassword')?.hasError('required') && signupForm.get('ConfirmPassword')?.touched">
+        Please confirm your password
+      </mat-error>
+      <mat-error *ngIf="signupForm.get('ConfirmPassword')?.hasError('passwordMismatch')">
+        Passwords do not match
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field class="input-box" appearance="fill">
+      <mat-label>Mobile Number (Optional)</mat-label>
+      <input matInput formControlName="MobileNumber" placeholder="Enter your mobile number" />
+      <mat-error *ngIf="signupForm.get('MobileNumber')?.hasError('pattern')">
+        Please enter a valid mobile number
+      </mat-error>
+    </mat-form-field>
+
+    <button 
+      mat-raised-button 
+      color="primary" 
+      class="signup-btn" 
+      [disabled]="signupForm.invalid || isLoading"
+      type="submit"
+    >
+      <mat-spinner *ngIf="isLoading" diameter="20" class="spinner"></mat-spinner>
+      <span *ngIf="!isLoading">Create Account</span>
+    </button>
+  </form>
+
+  <div class="footer-links">
+    <span class="footer-text">Already have an account?</span>
+    <a routerLink="/signin" class="footer-link strong">Sign In</a>
+  </div>
+</div>

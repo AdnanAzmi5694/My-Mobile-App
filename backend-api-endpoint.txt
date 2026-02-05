@@ -1,0 +1,54 @@
+// Add this method to your UserController.cs
+
+[HttpGet("group/{userGroupId}")]
+[Authorize]
+public async Task<IActionResult> GetUsersByUserGroupId(int userGroupId)
+{
+    try
+    {
+        if (userGroupId <= 0)
+        {
+            return BadRequest("Valid UserGroupId is required");
+        }
+
+        // Get current user's ClientId from token
+        var currentClientId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (int.TryParse(currentClientId, out int currentClientId))
+        {
+            // Get users from the same UserGroupId
+            var users = await _context.Users
+                .Where(u => u.UserGroupId == userGroupId && u.IsActive == true)
+                .Select(u => new 
+                {
+                    UserId = u.UserId,
+                    Username = u.Username,
+                    Email = u.Email,
+                    ClientId = u.ClientId,
+                    CompanyName = _context.Companies
+                        .Where(c => c.ClientId == u.ClientId)
+                        .Select(c => c.Name)
+                        .FirstOrDefault(),
+                    UserGroupId = u.UserGroupId
+                })
+                .OrderBy(u => u.Username)
+                .ToListAsync();
+
+            _logger.LogInformation("Retrieved {Count} users for UserGroupId {UserGroupId}", users.Count, userGroupId);
+
+            return Ok(new { 
+                users = users,
+                currentUserClientId = currentClientId,
+                userGroupId = userGroupId
+            });
+        }
+        else
+        {
+            return Unauthorized("Invalid user information");
+        }
+    }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, "Error occurred while retrieving users for UserGroupId {UserGroupId}", userGroupId);
+        return StatusCode(500, new { error = "An internal error occurred while retrieving users" });
+    }
+}

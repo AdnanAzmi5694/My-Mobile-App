@@ -1,0 +1,113 @@
+import { Component, OnInit, OnDestroy, Inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { MatCardModule } from '@angular/material/card';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTableModule } from '@angular/material/table';
+import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatSortModule } from '@angular/material/sort';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
+import { DashboardService } from '../services/dashboard.service';
+import { TransactionDetail, DetailsDialogData as DialogData } from '../models/dashboard.models';
+import { Subject, takeUntil } from 'rxjs';
+
+@Component({
+  selector: 'app-details',
+  standalone: true,
+  imports: [
+    CommonModule,
+    MatCardModule,
+    MatButtonModule,
+    MatIconModule,
+    MatTableModule,
+    MatPaginatorModule,
+    MatSortModule,
+    MatProgressSpinnerModule,
+    MatSnackBarModule,
+    MatDialogModule
+  ],
+  templateUrl: './details.component.html',
+  styleUrl: './details.component.scss'
+})
+export class DetailsComponent implements OnInit, OnDestroy {
+  transactionDetails: TransactionDetail[] = [];
+  isLoading = false;
+  displayedColumns: string[] = ['docNo', 'docDate', 'quantity', 'amount'];
+  private destroy$ = new Subject<void>();
+
+  constructor(
+    private dashboardService: DashboardService,
+    private snackBar: MatSnackBar,
+    public dialogRef: MatDialogRef<DetailsComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: DialogData
+  ) {}
+
+  ngOnInit(): void {
+    this.loadTransactionDetails();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  loadTransactionDetails(): void {
+    this.isLoading = true;
+    
+    this.dashboardService.getDashboardSummary(
+      this.data.fromDate,
+      this.data.toDate,
+      this.data.clientId
+    ).pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
+      next: (dashboardData) => {
+        this.transactionDetails = this.data.type === 'purchase' 
+          ? dashboardData.purchaseDetails 
+          : dashboardData.salesDetails;
+        this.isLoading = false;
+      },
+      error: (err: any) => {
+        const message = err.error?.error || 'Failed to load transaction details';
+        this.snackBar.open(message, 'Close', { 
+          duration: 4000,
+          panelClass: ['error-snackbar']
+        });
+        this.isLoading = false;
+      }
+    });
+  }
+
+  closeDialog(): void {
+    this.dialogRef.close();
+  }
+
+  formatCurrency(amount: number): string {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR'
+    }).format(amount);
+  }
+
+  formatNumber(num: number): string {
+    return new Intl.NumberFormat('en-IN').format(num);
+  }
+
+  formatDate(date: Date): string {
+    return new Date(date).toLocaleDateString('en-IN');
+  }
+
+  getTypeTitle(): string {
+    return this.data.type === 'purchase' ? 'Purchase' : 'Sales';
+  }
+
+  getTypeIcon(): string {
+    return this.data.type === 'purchase' ? 'shopping_cart' : 'point_of_sale';
+  }
+
+  getTypeColor(): string {
+    return this.data.type === 'purchase' ? '#e74c3c' : '#27ae60';
+  }
+} 

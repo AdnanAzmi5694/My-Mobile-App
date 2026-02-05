@@ -21,8 +21,15 @@
         </button>
       </mat-form-field>
   
-      <button mat-raised-button color="primary" class="login-btn" [disabled]="loginForm.invalid">
-        log in
+      <button 
+        mat-raised-button 
+        color="primary" 
+        class="login-btn" 
+        [disabled]="loginForm.invalid || isLoading"
+        type="submit"
+      >
+        <mat-spinner *ngIf="isLoading" diameter="20" class="spinner"></mat-spinner>
+        <span *ngIf="!isLoading">log in</span>
       </button>
     </form>
   

@@ -2,6 +2,8 @@ import { Routes } from '@angular/router';
 import { SigninComponent } from './signin/signin.component'; 
 import { SignUpComponent } from './sign-up/sign-up.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
+import { DetailsComponent } from './details/details.component';
+//import { SalesDetailComponent } from './sales-detail/sales-detail.component';
 export const routes: Routes = [
   {
     path: '', redirectTo: 'signin', pathMatch: 'full' // ✅ redirect root to /signin
@@ -21,4 +23,6 @@ export const routes: Routes = [
 
   },
   { path: 'dashboard', component: DashboardComponent }, // ✅ Must be here
+  { path: 'details', component: DetailsComponent },
+ // { path: 'SalesDetail' , component : SalesDetailComponent},
 ];
