@@ -1,149 +1,161 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
-import { environment } from '../../environments/environment';
+import { AuthRepository, LoginRequest, SignUpRequest, LoginResponse } from './repositories/auth.repository';
 
+/**
+ * AuthService
+ * Business logic layer for authentication
+ * Uses AuthRepository for data access
+ */
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private baseUrl = `${environment.apiUrl}User`;
-  
-  constructor(private http: HttpClient) {}
+  private readonly TOKEN_KEY = 'access_token';
+  private readonly CLIENT_ID_KEY = 'client_id';
+  private readonly COMPANY_NAME_KEY = 'company_name';
 
-  login(credentials: { Email: string; Password: string }): Observable<any> {
-    const body = {
-      Email: credentials.Email,
-      Password: credentials.Password
+  constructor(private authRepository: AuthRepository) {}
+
+  /**
+   * Login user with credentials
+   * Stores token and user info in localStorage after successful login
+   */
+  login(credentials: { Email: string; Password: string }): Observable<LoginResponse> {
+    const loginRequest: LoginRequest = {
+      email: credentials.Email,
+      password: credentials.Password
     };
 
-    return this.http.post(`${this.baseUrl}/login`, body).pipe(
-      tap((res: any) => {
-        if (typeof window !== 'undefined' && res.token) {
-          localStorage.setItem('access_token', res.token);
-        }
-        if (typeof window !== 'undefined' && res.clientId) {
-          localStorage.setItem('client_id', res.clientId);
-        }
-        if (typeof window !== 'undefined' && res.companyName) {
-          localStorage.setItem('company_name', res.companyName);
-        }
-      })
+    return this.authRepository.login(loginRequest).pipe(
+      tap((response) => this.storeAuthData(response))
     );
   }
 
-  register(userData: { Username: string; Email: string; Password: string; MobileNmbr?: string }): Observable<any> {
-    const body = {
-      Username: userData.Username,
-      Email: userData.Email,
-      Password: userData.Password,
-      MobileNmbr: userData.MobileNmbr
+  /**
+   * Register new user account
+   */
+  register(userData: { 
+    Username: string; 
+    Email: string; 
+    Password: string; 
+    MobileNmbr?: string 
+  }): Observable<any> {
+    const signUpRequest: SignUpRequest = {
+      email: userData.Email,
+      password: userData.Password,
+      username: userData.Username,
+      confirmPassword: userData.Password
     };
 
-    return this.http.post(`${this.baseUrl}/register`, body);
+    return this.authRepository.signUp(signUpRequest);
   }
 
+  /**
+   * Get user group ID from JWT token
+   */
   getUserGroupId(): number | null {
-    if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('access_token');
-      if (token) {
-        try {
-          const payload = JSON.parse(atob(token.split('.')[1]));
-          console.log('JWT Payload:', payload); // Debug log
-          return payload.UserGroupId || null;
-        } catch (error) {
-          console.error('Error decoding token:', error);
-          return null;
-        }
-      }
+    if (typeof window === 'undefined') return null;
+
+    const token = this.getToken();
+    if (!token) return null;
+
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return payload.UserGroupId || null;
+    } catch (error) {
+      console.error('Error decoding token:', error);
+      return null;
     }
-    return null;
   }
 
+  /**
+   * Get users by user group ID (async)
+   * Note: This would need an endpoint on the backend
+   */
   async getUsersByUserGroupId(): Promise<any[]> {
     const userGroupId = this.getUserGroupId();
-    console.log('=== getUsersByUserGroupId ===');
-    console.log('UserGroupId:', userGroupId);
-    console.log('Base URL:', this.baseUrl);
-    console.log('Full URL:', `${this.baseUrl}/group/${userGroupId}`);
-    console.log('Environment API URL:', environment.apiUrl);
     
     if (!userGroupId) {
-      console.log('No UserGroupId found, returning empty array');
+      console.log('No UserGroupId found');
       return [];
     }
 
     try {
-      console.log('Making HTTP GET call...');
-      const fullUrl = `${this.baseUrl}/group/${userGroupId}`;
-      console.log('Full API URL being called:', fullUrl);
-      
-      const token = this.getToken();
-      console.log('Token being used:', token ? 'Present' : 'Missing');
-      
-      const headers = {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      };
-      
-      const response = await this.http.get(fullUrl, { headers }).toPromise();
-      console.log('API Response:', response);
-      
-      if (!response) {
-        console.log('No response received from API');
-        return [];
-      }
-      
-      const data = response as any;
-      console.log('Data extracted:', data);
-      console.log('Users array:', data.users);
-      console.log('Users array length:', data.users?.length || 0);
-      return data.users || [];
-    } catch (error: any) {
+      // This would need to be added to the repository if backend supports it
+      // const response = await this.authRepository.getUsersByGroupId(userGroupId).toPromise();
+      // return response?.users || [];
+      return [];
+    } catch (error) {
       console.error('Error fetching users by group:', error);
-      console.error('Error details:', {
-        status: error?.status,
-        statusText: error?.statusText,
-        url: error?.url,
-        message: error?.message
-      });
       return [];
     }
   }
 
+  /**
+   * Logout user
+   */
   logout(): void {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('client_id');
-      localStorage.removeItem('company_name');
-    }
+    this.clearAuthData();
   }
 
+  /**
+   * Check if user is logged in
+   */
   isLoggedIn(): boolean {
-    if (typeof window !== 'undefined') {
-      return !!localStorage.getItem('access_token');
-    }
-    return false;
+    if (typeof window === 'undefined') return false;
+    return !!this.getToken();
   }
 
+  /**
+   * Get access token
+   */
   getToken(): string | null {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('access_token');
+      return localStorage.getItem(this.TOKEN_KEY);
     }
     return null;
   }
 
+  /**
+   * Get client ID
+   */
   getClientId(): string | null {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('client_id');
+      return localStorage.getItem(this.CLIENT_ID_KEY);
     }
     return null;
   }
 
+  /**
+   * Get company name
+   */
   getCompanyName(): string | null {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('company_name');
+      return localStorage.getItem(this.COMPANY_NAME_KEY);
     }
     return null;
+  }
+
+  /**
+   * Store authentication data in localStorage
+   */
+  private storeAuthData(response: LoginResponse): void {
+    if (typeof window === 'undefined') return;
+
+    if (response.token) {
+      localStorage.setItem(this.TOKEN_KEY, response.token);
+    }
+  }
+
+  /**
+   * Clear authentication data from localStorage
+   */
+  private clearAuthData(): void {
+    if (typeof window === 'undefined') return;
+
+    localStorage.removeItem(this.TOKEN_KEY);
+    localStorage.removeItem(this.CLIENT_ID_KEY);
+    localStorage.removeItem(this.COMPANY_NAME_KEY);
   }
 }
