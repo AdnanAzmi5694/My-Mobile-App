@@ -1,0 +1,151 @@
+.jobber-alteration-container {
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+
+  .page-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    color: #1976d2;
+
+    .title-icon {
+      font-size: 32px;
+      width: 32px;
+      height: 32px;
+    }
+  }
+}
+
+.search-card {
+  margin-bottom: 20px;
+
+  .search-form {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    flex-wrap: wrap;
+
+    .search-field {
+      min-width: 200px;
+      flex: 1;
+    }
+
+    .clear-btn {
+      min-width: 120px;
+    }
+  }
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+
+  p {
+    margin-top: 16px;
+    color: #666;
+  }
+}
+
+.alteration-tabs {
+  .tab-content {
+    padding: 20px 0;
+
+    .tab-header {
+      margin-bottom: 20px;
+
+      h3 {
+        margin: 0 0 8px 0;
+        color: #1976d2;
+        font-weight: 500;
+      }
+
+      .tab-description {
+        margin: 0;
+        color: #666;
+        font-size: 14px;
+      }
+    }
+
+    .no-data {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+      color: #999;
+
+      .no-data-icon {
+        font-size: 48px;
+        width: 48px;
+        height: 48px;
+        margin-bottom: 16px;
+      }
+
+      p {
+        margin: 0;
+        font-size: 16px;
+      }
+    }
+
+    .table-container {
+      .alteration-table {
+        width: 100%;
+        margin-bottom: 16px;
+
+        .product-desc {
+          max-width: 200px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .jobber-name {
+          &.empty {
+            color: #f44336;
+            font-style: italic;
+          }
+        }
+
+        .amount {
+          font-weight: 500;
+          color: #1976d2;
+        }
+
+        .type-badge {
+          padding: 4px 8px;
+          border-radius: 12px;
+          font-size: 12px;
+          font-weight: 500;
+          text-transform: uppercase;
+
+          &.type-2 { background-color: #e3f2fd; color: #1976d2; } // Purchase
+          &.type-3 { background-color: #fff3e0; color: #f57c00; } // Purchase Return
+          &.type-4 { background-color: #e8f5e8; color: #388e3c; } // Purchase Approval
+          &.type-5 { background-color: #fce4ec; color: #c2185b; } // Purchase Return Approval
+          &.type-6 { background-color: #f3e5f5; color: #7b1fa2; } // Sales
+          &.type-7 { background-color: #e0f2f1; color: #00695c; } // Sales Approval
+          &.type-8 { background-color: #fff8e1; color: #f9a825; } // Sales Return
+          &.type-9 { background-color: #f1f8e9; color: #689f38; } // Sales Return Approval
+        }
+
+          .clickable-row {
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+
+            &:hover {
+              background-color: #f5f5f5;
+            }
+          }
+}

@@ -1,0 +1,183 @@
+<div class="alteration-details-dialog">
+  <!-- Header -->
+  <div class="dialog-header">
+    <div class="header-content">
+      <div class="title-section">
+        <mat-icon [style.color]="getStatusColor()" class="status-icon">build</mat-icon>
+        <h2 class="dialog-title">Alteration Details</h2>
+      </div>
+      <button mat-icon-button (click)="closeDialog()" class="close-btn">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <!-- Status Info -->
+    <div class="status-info">
+      <div class="status-badge" [style.background-color]="getStatusColor()">
+        {{ getStatusDescription() }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="dialog-content">
+    <div class="details-grid">
+      <!-- Basic Information -->
+      <mat-card class="detail-card">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>info</mat-icon>
+            Basic Information
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label">Record ID:</span>
+              <span class="info-value">{{ data.record.Id }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Purchase ID:</span>
+              <span class="info-value">{{ data.record.PurtPurId }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Product Code:</span>
+              <span class="info-value">{{ data.record.ProductCode }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Barcode:</span>
+              <span class="info-value">{{ data.record.BarcodeDesc || 'N/A' }}</span>
+            </div>
+            <div class="info-item full-width">
+              <span class="info-label">Product Description:</span>
+              <span class="info-value">{{ data.record.ProductDesc }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Category:</span>
+              <span class="info-value">{{ data.record.CategoryDescription }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Department:</span>
+              <span class="info-value">{{ data.record.DeptDescription }}</span>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Transaction Details -->
+      <mat-card class="detail-card">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>receipt</mat-icon>
+            Transaction Details
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label">Type:</span>
+              <span class="info-value type-badge" [class]="'type-' + data.record.PurtType">
+                {{ getTypeDescription(data.record.PurtType) }}
+              </span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Client ID:</span>
+              <span class="info-value">{{ data.record.ClientId }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Rate:</span>
+              <span class="info-value">{{ formatCurrency(data.record.PurtRate) }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">MRP:</span>
+              <span class="info-value">{{ formatCurrency(data.record.PurtMrp) }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Selling Price:</span>
+              <span class="info-value">{{ formatCurrency(data.record.PurtSelPrice) }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Debit Qty:</span>
+              <span class="info-value">{{ data.record.PurtDebitQty }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Credit Qty:</span>
+              <span class="info-value">{{ data.record.PurtCreditQty }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Amount:</span>
+              <span class="info-value amount">{{ formatCurrency(data.record.Amount) }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Discount:</span>
+              <span class="info-value">{{ formatCurrency(data.record.DiscountAmount) }}</span>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Alteration Status -->
+      <mat-card class="detail-card">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>engineering</mat-icon>
+            Alteration Status
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label">Jobber Name:</span>
+              <span class="info-value" [class.empty]="!data.record.JobberName">
+                {{ data.record.JobberName || 'Not Assigned' }}
+              </span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Alteration Marked:</span>
+              <span class="info-value">
+                <mat-icon [style.color]="data.record.PurtAlteration ? '#4caf50' : '#f44336'">
+                  {{ data.record.PurtAlteration ? 'check_circle' : 'cancel' }}
+                </mat-icon>
+                {{ data.record.PurtAlteration ? 'Yes' : 'No' }}
+              </span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Received:</span>
+              <span class="info-value">
+                <mat-icon [style.color]="data.record.PurtReceived ? '#4caf50' : '#f44336'">
+                  {{ data.record.PurtReceived ? 'check_circle' : 'cancel' }}
+                </mat-icon>
+                {{ data.record.PurtReceived ? 'Yes' : 'No' }}
+              </span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Delivered:</span>
+              <span class="info-value">
+                <mat-icon [style.color]="data.record.PurtDelivered ? '#4caf50' : '#f44336'">
+                  {{ data.record.PurtDelivered ? 'check_circle' : 'cancel' }}
+                </mat-icon>
+                {{ data.record.PurtDelivered ? 'Yes' : 'No' }}
+              </span>
+            </div>
+            <div class="info-item" *ngIf="data.record.PurtReceivedDate">
+              <span class="info-label">Received Date:</span>
+              <span class="info-value">{{ formatDate(data.record.PurtReceivedDate) }}</span>
+            </div>
+            <div class="info-item" *ngIf="data.record.PurtDeliveredDate">
+              <span class="info-label">Delivered Date:</span>
+              <span class="info-value">{{ formatDate(data.record.PurtDeliveredDate) }}</span>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="dialog-footer">
+    <button mat-raised-button color="primary" (click)="closeDialog()">
+      <mat-icon>close</mat-icon>
+      Close
+    </button>
+  </div>
+</div>

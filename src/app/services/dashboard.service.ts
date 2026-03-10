@@ -77,4 +77,13 @@ export class DashboardService {
       headers: this.getHeaders()
     });
   }
+
+  getAlterationRecords(): Observable<any> {
+    // TODO: Replace with actual backend endpoint
+    // This should call your backend API that returns alteration records
+    // For now, returning empty observable - implement the actual endpoint
+    return this.http.get(`${this.baseUrl}/alterations`, {
+      headers: this.getHeaders()
+    });
+  }
 } 

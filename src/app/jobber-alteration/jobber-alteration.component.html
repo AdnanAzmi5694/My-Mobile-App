@@ -1,0 +1,302 @@
+<div class="jobber-alteration-container">
+  <!-- Header -->
+  <div class="header-section">
+    <h1 class="page-title">
+      <mat-icon class="title-icon">build</mat-icon>
+      Jobber Alteration Management
+    </h1>
+    <button mat-raised-button color="primary" (click)="loadAlterationData()" [disabled]="isLoading">
+      <mat-icon>refresh</mat-icon>
+      Refresh Data
+    </button>
+  </div>
+
+  <!-- Search Filters -->
+  <mat-card class="search-card">
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon>search</mat-icon>
+        Search Filters
+      </mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <form [formGroup]="searchForm" class="search-form">
+        <mat-form-field appearance="outline" class="search-field">
+          <mat-label>Jobber Name</mat-label>
+          <input matInput formControlName="jobberName" placeholder="Search by jobber name">
+          <mat-icon matSuffix>person</mat-icon>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="search-field">
+          <mat-label>Product/Item</mat-label>
+          <input matInput formControlName="productCode" placeholder="Search by product code or description">
+          <mat-icon matSuffix>inventory</mat-icon>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="search-field">
+          <mat-label>Category</mat-label>
+          <input matInput formControlName="category" placeholder="Search by category">
+          <mat-icon matSuffix>category</mat-icon>
+        </mat-form-field>
+
+        <button mat-stroked-button color="accent" (click)="clearFilters()" class="clear-btn">
+          <mat-icon>clear</mat-icon>
+          Clear Filters
+        </button>
+      </form>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Loading Spinner -->
+  <div *ngIf="isLoading" class="loading-container">
+    <mat-spinner diameter="50"></mat-spinner>
+    <p>Loading alteration records...</p>
+  </div>
+
+  <!-- Tabs Section -->
+  <mat-tab-group *ngIf="!isLoading" class="alteration-tabs">
+    <!-- Pending Alteration Tab -->
+    <mat-tab label="Pending Alteration ({{ filteredPending.length }})">
+      <div class="tab-content">
+        <div class="tab-header">
+          <h3>Pending Alterations</h3>
+          <p class="tab-description">
+            Records marked for alteration but jobber name is blank
+          </p>
+        </div>
+
+        <div *ngIf="filteredPending.length === 0" class="no-data">
+          <mat-icon class="no-data-icon">info</mat-icon>
+          <p>No pending alterations found</p>
+        </div>
+
+        <div *ngIf="filteredPending.length > 0" class="table-container">
+          <table mat-table [dataSource]="filteredPending" matSort class="alteration-table">
+            <!-- ID Column -->
+            <ng-container matColumnDef="Id">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>ID</th>
+              <td mat-cell *matCellDef="let record">{{ record.Id }}</td>
+            </ng-container>
+
+            <!-- Product Code Column -->
+            <ng-container matColumnDef="ProductCode">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Product Code</th>
+              <td mat-cell *matCellDef="let record">{{ record.ProductCode }}</td>
+            </ng-container>
+
+            <!-- Product Description Column -->
+            <ng-container matColumnDef="ProductDesc">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Product Description</th>
+              <td mat-cell *matCellDef="let record" class="product-desc">{{ record.ProductDesc }}</td>
+            </ng-container>
+
+            <!-- Category Column -->
+            <ng-container matColumnDef="CategoryDescription">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Category</th>
+              <td mat-cell *matCellDef="let record">{{ record.CategoryDescription }}</td>
+            </ng-container>
+
+            <!-- Jobber Name Column -->
+            <ng-container matColumnDef="JobberName">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Jobber Name</th>
+              <td mat-cell *matCellDef="let record">
+                <span class="jobber-name" [class.empty]="!record.JobberName || record.JobberName.trim() === ''">
+                  {{ record.JobberName || 'Not Assigned' }}
+                </span>
+              </td>
+            </ng-container>
+
+            <!-- Debit Qty Column -->
+            <ng-container matColumnDef="PurtDebitQty">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Debit Qty</th>
+              <td mat-cell *matCellDef="let record">{{ record.PurtDebitQty }}</td>
+            </ng-container>
+
+            <!-- Credit Qty Column -->
+            <ng-container matColumnDef="PurtCreditQty">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Credit Qty</th>
+              <td mat-cell *matCellDef="let record">{{ record.PurtCreditQty }}</td>
+            </ng-container>
+
+            <!-- Amount Column -->
+            <ng-container matColumnDef="Amount">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Amount</th>
+              <td mat-cell *matCellDef="let record" class="amount">{{ record.Amount | currency:'INR':'symbol':'1.2-2' }}</td>
+            </ng-container>
+
+            <!-- Type Column -->
+            <ng-container matColumnDef="PurtType">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Type</th>
+              <td mat-cell *matCellDef="let record">
+                <span class="type-badge" [class]="'type-' + record.PurtType">
+                  {{ getPurtTypeDescription(record.PurtType) }}
+                </span>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;" 
+                (click)="openDetailsDialog(row, 'pending')" 
+                class="clickable-row"></tr>
+          </table>
+
+          <mat-paginator [pageSizeOptions]="[10, 25, 50]" showFirstLastButtons></mat-paginator>
+        </div>
+      </div>
+    </mat-tab>
+
+    <!-- Received Alteration Tab -->
+    <mat-tab label="Received Alteration ({{ filteredReceived.length }})">
+      <div class="tab-content">
+        <div class="tab-header">
+          <h3>Received Alterations</h3>
+          <p class="tab-description">
+            Records marked as received but not yet delivered
+          </p>
+        </div>
+
+        <div *ngIf="filteredReceived.length === 0" class="no-data">
+          <mat-icon class="no-data-icon">info</mat-icon>
+          <p>No received alterations found</p>
+        </div>
+
+        <div *ngIf="filteredReceived.length > 0" class="table-container">
+          <table mat-table [dataSource]="filteredReceived" matSort class="alteration-table">
+            <ng-container matColumnDef="Id">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>ID</th>
+              <td mat-cell *matCellDef="let record">{{ record.Id }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="ProductCode">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Product Code</th>
+              <td mat-cell *matCellDef="let record">{{ record.ProductCode }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="ProductDesc">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Product Description</th>
+              <td mat-cell *matCellDef="let record" class="product-desc">{{ record.ProductDesc }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="CategoryDescription">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Category</th>
+              <td mat-cell *matCellDef="let record">{{ record.CategoryDescription }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="JobberName">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Jobber Name</th>
+              <td mat-cell *matCellDef="let record">{{ record.JobberName || 'N/A' }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="PurtDebitQty">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Debit Qty</th>
+              <td mat-cell *matCellDef="let record">{{ record.PurtDebitQty }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="PurtCreditQty">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Credit Qty</th>
+              <td mat-cell *matCellDef="let record">{{ record.PurtCreditQty }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="Amount">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Amount</th>
+              <td mat-cell *matCellDef="let record" class="amount">{{ record.Amount | currency:'INR':'symbol':'1.2-2' }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="PurtType">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Type</th>
+              <td mat-cell *matCellDef="let record">
+                <span class="type-badge" [class]="'type-' + record.PurtType">
+                  {{ getPurtTypeDescription(record.PurtType) }}
+                </span>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;" 
+                (click)="openDetailsDialog(row, 'received')" 
+                class="clickable-row"></tr>
+          </table>
+
+          <mat-paginator [pageSizeOptions]="[10, 25, 50]" showFirstLastButtons></mat-paginator>
+        </div>
+      </div>
+    </mat-tab>
+
+    <!-- Delivered Tab -->
+    <mat-tab label="Delivered ({{ filteredDelivered.length }})">
+      <div class="tab-content">
+        <div class="tab-header">
+          <h3>Delivered Alterations</h3>
+          <p class="tab-description">
+            Records that have been delivered
+          </p>
+        </div>
+
+        <div *ngIf="filteredDelivered.length === 0" class="no-data">
+          <mat-icon class="no-data-icon">info</mat-icon>
+          <p>No delivered alterations found</p>
+        </div>
+
+        <div *ngIf="filteredDelivered.length > 0" class="table-container">
+          <table mat-table [dataSource]="filteredDelivered" matSort class="alteration-table">
+            <ng-container matColumnDef="Id">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>ID</th>
+              <td mat-cell *matCellDef="let record">{{ record.Id }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="ProductCode">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Product Code</th>
+              <td mat-cell *matCellDef="let record">{{ record.ProductCode }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="ProductDesc">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Product Description</th>
+              <td mat-cell *matCellDef="let record" class="product-desc">{{ record.ProductDesc }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="CategoryDescription">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Category</th>
+              <td mat-cell *matCellDef="let record">{{ record.CategoryDescription }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="JobberName">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Jobber Name</th>
+              <td mat-cell *matCellDef="let record">{{ record.JobberName || 'N/A' }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="PurtDebitQty">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Debit Qty</th>
+              <td mat-cell *matCellDef="let record">{{ record.PurtDebitQty }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="PurtCreditQty">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Credit Qty</th>
+              <td mat-cell *matCellDef="let record">{{ record.PurtCreditQty }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="Amount">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Amount</th>
+              <td mat-cell *matCellDef="let record" class="amount">{{ record.Amount | currency:'INR':'symbol':'1.2-2' }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="PurtType">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Type</th>
+              <td mat-cell *matCellDef="let record">
+                <span class="type-badge" [class]="'type-' + record.PurtType">
+                  {{ getPurtTypeDescription(record.PurtType) }}
+                </span>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;" 
+                (click)="openDetailsDialog(row, 'delivered')" 
+                class="clickable-row"></tr>
+          </table>
+
+          <mat-paginator [pageSizeOptions]="[10, 25, 50]" showFirstLastButtons></mat-paginator>
+        </div>
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+</div>

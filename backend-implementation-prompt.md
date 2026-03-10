@@ -331,4 +331,120 @@ Once these backend changes are implemented, the Angular frontend will automatica
 - Filter dashboard data by selected company
 - Show proper user counts and information
 
+## 📋 Jobber Alteration Backend Requirements
+
+### 6. Add Jobber Alteration API Endpoint
+**File:** `DashboardController.cs` or new `AlterationController.cs`
+
+```csharp
+[HttpGet("alterations")]
+[Authorize]
+public async Task<IActionResult> GetAlterationRecords()
+{
+    try
+    {
+        // Get current user's ClientId from token
+        var currentClientIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (!int.TryParse(currentClientIdClaim, out int currentClientId))
+        {
+            return Unauthorized(new { error = "Invalid user information" });
+        }
+
+        // Get all alteration records (assuming table name is PurchaseTransactions or similar)
+        var alterationRecords = await _rmagicContext.PurchaseTransactions
+            .Where(pt => pt.ClientId == currentClientId) // Filter by user's company
+            .Select(pt => new 
+            {
+                Id = pt.Id,
+                PurtPurId = pt.PurtPurId,
+                BarcodeDesc = pt.BarcodeDesc,
+                ProductCode = pt.ProductCode,
+                ProductDesc = pt.ProductDesc,
+                CategoryDescription = pt.CategoryDescription,
+                DeptDescription = pt.DeptDescription,
+                ClientId = pt.ClientId,
+                PurtRate = pt.PurtRate,
+                PurtMrp = pt.PurtMrp,
+                PurtSelPrice = pt.PurtSelPrice,
+                PurtDebitQty = pt.PurtDebitQty,
+                PurtCreditQty = pt.PurtCreditQty,
+                Amount = pt.Amount,
+                DiscountAmount = pt.DiscountAmount,
+                PurtType = pt.PurtType,
+                JobberName = pt.JobberName,
+                PurtDelivered = pt.PurtDelivered,
+                PurtAlteration = pt.PurtAlteration,
+                PurtDeliveredDate = pt.PurtDeliveredDate,
+                PurtReceivedDate = pt.PurtReceivedDate,
+                PurtReceived = pt.PurtReceived,
+                PurtId = pt.PurtId
+            })
+            .OrderByDescending(pt => pt.Id)
+            .ToListAsync();
+
+        _logger.LogInformation("Retrieved {Count} alteration records for ClientId {ClientId}", 
+            alterationRecords.Count, currentClientId);
+
+        return Ok(alterationRecords);
+    }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, "Error retrieving alteration records for ClientId {ClientId}", currentClientId);
+        return StatusCode(500, new { 
+            error = "An internal error occurred while retrieving alteration records",
+            details = ex.Message 
+        });
+    }
+}
+```
+
+### 7. Database Model for Purchase Transactions
+**File:** `PurchaseTransaction.cs` Model
+
+```csharp
+public class PurchaseTransaction
+{
+    public int Id { get; set; }
+    public int PurtPurId { get; set; }
+    public string BarcodeDesc { get; set; }
+    public string ProductCode { get; set; }
+    public string ProductDesc { get; set; }
+    public string CategoryDescription { get; set; }
+    public string DeptDescription { get; set; }
+    public int ClientId { get; set; }
+    public decimal PurtRate { get; set; }
+    public decimal PurtMrp { get; set; }
+    public decimal PurtSelPrice { get; set; }
+    public decimal PurtDebitQty { get; set; }
+    public decimal PurtCreditQty { get; set; }
+    public decimal Amount { get; set; }
+    public decimal DiscountAmount { get; set; }
+    public int PurtType { get; set; }
+    public string JobberName { get; set; }
+    public bool PurtDelivered { get; set; }
+    public bool PurtAlteration { get; set; }
+    public DateTime? PurtDeliveredDate { get; set; }
+    public DateTime? PurtReceivedDate { get; set; }
+    public bool PurtReceived { get; set; }
+    public int PurtId { get; set; }
+    
+    // Navigation properties
+    public virtual Company Company { get; set; }
+}
+```
+
+### 8. Update DbContext
+**File:** `RMagicContext.cs`
+
+```csharp
+public class RMagicContext : DbContext
+{
+    // ... existing DbSets
+    
+    public DbSet<PurchaseTransaction> PurchaseTransactions { get; set; }
+    
+    // ... rest of the context
+}
+```
+
 The frontend is already complete - just implement these backend changes!

@@ -3,6 +3,7 @@ import { SigninComponent } from './signin/signin.component';
 import { SignUpComponent } from './sign-up/sign-up.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { DetailsComponent } from './details/details.component';
+import { JobberAlterationComponent } from './jobber-alteration/jobber-alteration.component';
 //import { SalesDetailComponent } from './sales-detail/sales-detail.component';
 export const routes: Routes = [
   {
@@ -24,5 +25,6 @@ export const routes: Routes = [
   },
   { path: 'dashboard', component: DashboardComponent }, // ✅ Must be here
   { path: 'details', component: DetailsComponent },
- // { path: 'SalesDetail' , component : SalesDetailComponent},
+  { path: 'jobber-alteration', component: JobberAlterationComponent },
+// { path: 'SalesDetail' , component : SalesDetailComponent},
 ];

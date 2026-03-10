@@ -46,10 +46,16 @@
           </small>
         </div>
       </div>
-      <button mat-raised-button color="warn" (click)="logout()" class="logout-btn">
-        <mat-icon>logout</mat-icon>
-        Logout
-      </button>
+      <div class="header-actions">
+        <button mat-raised-button color="accent" routerLink="/jobber-alteration" class="alteration-btn">
+          <mat-icon>build</mat-icon>
+          Jobber Alteration
+        </button>
+        <button mat-raised-button color="warn" (click)="logout()" class="logout-btn">
+          <mat-icon>logout</mat-icon>
+          Logout
+        </button>
+      </div>
     </div>
   </div>
 
