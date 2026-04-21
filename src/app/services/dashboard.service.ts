@@ -11,7 +11,8 @@ import { environment } from '../../environments/environment';
 })
 export class DashboardService {
   
-  private baseUrl = `${environment.apiUrl}Dashboard`;
+  private dashboardBaseUrl = `${environment.apiUrl}Dashboard`;
+  private jobberAlterationBaseUrl = `${environment.apiUrl}jobberalteration`;
 
   constructor(
     private http: HttpClient,
@@ -63,27 +64,70 @@ export class DashboardService {
       toDateTime: toDateObj.getTime()
     });
     console.log('API call params:', params);
-    console.log('Full URL:', `${this.baseUrl}/summary`, params);
+    console.log('Full URL:', `${this.dashboardBaseUrl}/summary`, params);
     console.log('===================');
 
-    return this.http.get(`${this.baseUrl}/summary`, {
+    return this.http.get(`${this.dashboardBaseUrl}/summary`, {
       headers: this.getHeaders(),
       params: params
     });
   }
 
   testConnection(): Observable<any> {
-    return this.http.get(`${this.baseUrl}/test`, {
+    return this.http.get(`${this.dashboardBaseUrl}/test`, {
       headers: this.getHeaders()
     });
   }
 
   getAlterationRecords(): Observable<any> {
-    // TODO: Replace with actual backend endpoint
-    // This should call your backend API that returns alteration records
-    // For now, returning empty observable - implement the actual endpoint
-    return this.http.get(`${this.baseUrl}/alterations`, {
+    return this.http.get(`${this.dashboardBaseUrl}/alterations`, {
       headers: this.getHeaders()
+    });
+  }
+
+  private buildAlterationParams(jobberName?: string, item?: string, category?: string, clientId?: number, page = 1, pageSize = 1000): any {
+    const params: any = {
+      page: page.toString(),
+      pageSize: pageSize.toString()
+    };
+
+    if (jobberName) {
+      params.jobberName = jobberName;
+    }
+    if (item) {
+      params.item = item;
+    }
+    if (category) {
+      params.category = category;
+    }
+    if (clientId && clientId > 0) {
+      params.clientId = clientId.toString();
+    }
+
+    return params;
+  }
+
+  getPendingAlterations(jobberName?: string, item?: string, category?: string, clientId?: number, page = 1, pageSize = 1000): Observable<any> {
+    const params = this.buildAlterationParams(jobberName, item, category, clientId, page, pageSize);
+    return this.http.get(`${this.jobberAlterationBaseUrl}/pending`, {
+      headers: this.getHeaders(),
+      params
+    });
+  }
+
+  getReceivedAlterations(jobberName?: string, item?: string, category?: string, clientId?: number, page = 1, pageSize = 1000): Observable<any> {
+    const params = this.buildAlterationParams(jobberName, item, category, clientId, page, pageSize);
+    return this.http.get(`${this.jobberAlterationBaseUrl}/received`, {
+      headers: this.getHeaders(),
+      params
+    });
+  }
+
+  getDeliveredAlterations(jobberName?: string, item?: string, category?: string, clientId?: number, page = 1, pageSize = 1000): Observable<any> {
+    const params = this.buildAlterationParams(jobberName, item, category, clientId, page, pageSize);
+    return this.http.get(`${this.jobberAlterationBaseUrl}/delivered`, {
+      headers: this.getHeaders(),
+      params
     });
   }
 } 

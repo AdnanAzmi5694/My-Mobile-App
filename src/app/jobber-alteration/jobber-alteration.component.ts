@@ -121,27 +121,20 @@ export class JobberAlterationComponent implements OnInit {
     });
   }
 
-  private async loadAlterationData(): Promise<void> {
+  async loadAlterationData(): Promise<void> {
     this.isLoading = true;
     try {
-      // TODO: Replace with actual API calls
-      // For now, using mock data structure
+      const clientId = Number(this.authService.getClientId() || 0);
 
-      // Mock API calls - replace with actual service methods
-      const allRecords = await this.getAllAlterationRecords();
+      const [pendingResponse, receivedResponse, deliveredResponse] = await Promise.all([
+        this.dashboardService.getPendingAlterations(undefined, undefined, undefined, clientId, 1, 1000).toPromise(),
+        this.dashboardService.getReceivedAlterations(undefined, undefined, undefined, clientId, 1, 1000).toPromise(),
+        this.dashboardService.getDeliveredAlterations(undefined, undefined, undefined, clientId, 1, 1000).toPromise()
+      ]);
 
-      // Filter records based on criteria
-      this.pendingAlterations = allRecords.filter(r =>
-        r.PurtAlteration === true && (!r.JobberName || r.JobberName.trim() === '')
-      );
-
-      this.receivedAlterations = allRecords.filter(r =>
-        r.PurtReceived === true && r.PurtDelivered === false
-      );
-
-      this.deliveredAlterations = allRecords.filter(r =>
-        r.PurtDelivered === true
-      );
+      this.pendingAlterations = pendingResponse?.data || [];
+      this.receivedAlterations = receivedResponse?.data || [];
+      this.deliveredAlterations = deliveredResponse?.data || [];
 
       this.applyFilters();
 
@@ -150,17 +143,6 @@ export class JobberAlterationComponent implements OnInit {
       this.snackBar.open('Error loading alteration data', 'Close', { duration: 3000 });
     } finally {
       this.isLoading = false;
-    }
-  }
-
-  private async getAllAlterationRecords(): Promise<AlterationRecord[]> {
-    try {
-      const response = await this.dashboardService.getAlterationRecords().toPromise();
-      return response || [];
-    } catch (error) {
-      console.error('Error fetching alteration records:', error);
-      // Return empty array on error
-      return [];
     }
   }
 
