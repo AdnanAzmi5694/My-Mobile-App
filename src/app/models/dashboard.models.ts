@@ -33,32 +33,35 @@ export interface DetailsDialogData {
 }
 
 export interface AlterationRecord {
-  Id: number;
-  PurtPurId: number;
-  BarcodeDesc: string;
-  ProductCode: string;
-  ProductDesc: string;
-  CategoryDescription: string;
-  DeptDescription: string;
-  ClientId: number;
-  PurtRate: number;
-  PurtMrp: number;
-  PurtSelPrice: number;
-  PurtDebitQty: number;
-  PurtCreditQty: number;
-  Amount: number;
-  DiscountAmount: number;
-  PurtType: number;
-  JobberName: string;
-  PurtDelivered: boolean;
-  PurtAlteration: boolean;
-  PurtDeliveredDate: string;
-  PurtReceivedDate: string;
-  PurtReceived: boolean;
-  PurtId: number;
+  id: number;
+  docNo?: number | string;
+  docDate?: string | null;
+  customerName?: string;
+  purtPurId: number;
+  barcodeDesc: string;
+  productCode: string;
+  productDesc: string;
+  categoryDescription: string;
+  deptDescription: string;
+  clientId: number;
+  purtRate: number;
+  purtMrp: number;
+  purtSelPrice: number;
+  purtDebitQty: number;
+  purtCreditQty: number;
+  amount: number;
+  discountAmount: number;
+  purtType: string;
+  jobberName: string;
+  purtDelivered: boolean;
+  purtAlteration: boolean;
+  purtDeliveredDate: string | null;
+  purtReceivedDate: string | null;
+  purtReceived: boolean;
+  purtId: number;
 }
 
 export interface AlterationDetailsDialogData {
   record: AlterationRecord;
   type: 'pending' | 'received' | 'delivered';
-} 
+}

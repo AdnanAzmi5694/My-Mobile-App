@@ -72,70 +72,82 @@
 
         <div *ngIf="filteredPending.length > 0" class="table-container">
           <table mat-table [dataSource]="filteredPending" matSort class="alteration-table">
-            <!-- ID Column -->
-            <ng-container matColumnDef="Id">
-              <th mat-header-cell *matHeaderCellDef mat-sort-header>ID</th>
-              <td mat-cell *matCellDef="let record">{{ record.Id }}</td>
+            <!-- Doc No Column -->
+            <ng-container matColumnDef="docNo">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Doc No</th>
+              <td mat-cell *matCellDef="let record">{{ getDocNo(record) }}</td>
+            </ng-container>
+
+            <!-- Doc Date Column -->
+            <ng-container matColumnDef="docDate">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Doc Date</th>
+              <td mat-cell *matCellDef="let record">{{ formatDate(record.docDate) }}</td>
+            </ng-container>
+
+            <!-- Customer Name Column -->
+            <ng-container matColumnDef="customerName">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Customer Name</th>
+              <td mat-cell *matCellDef="let record">{{ getCustomerName(record) }}</td>
             </ng-container>
 
             <!-- Product Code Column -->
-            <ng-container matColumnDef="ProductCode">
+            <ng-container matColumnDef="productCode">
               <th mat-header-cell *matHeaderCellDef mat-sort-header>Product Code</th>
-              <td mat-cell *matCellDef="let record">{{ record.ProductCode }}</td>
+              <td mat-cell *matCellDef="let record">{{ record.productCode }}</td>
             </ng-container>
 
             <!-- Product Description Column -->
-            <ng-container matColumnDef="ProductDesc">
+            <ng-container matColumnDef="productDesc">
               <th mat-header-cell *matHeaderCellDef mat-sort-header>Product Description</th>
-              <td mat-cell *matCellDef="let record" class="product-desc">{{ record.ProductDesc }}</td>
+              <td mat-cell *matCellDef="let record" class="product-desc">{{ record.productDesc }}</td>
             </ng-container>
 
             <!-- Category Column -->
-            <ng-container matColumnDef="CategoryDescription">
+            <ng-container matColumnDef="categoryDescription">
               <th mat-header-cell *matHeaderCellDef mat-sort-header>Category</th>
-              <td mat-cell *matCellDef="let record">{{ record.CategoryDescription }}</td>
+              <td mat-cell *matCellDef="let record">{{ record.categoryDescription }}</td>
             </ng-container>
 
             <!-- Jobber Name Column -->
-            <ng-container matColumnDef="JobberName">
+            <ng-container matColumnDef="jobberName">
               <th mat-header-cell *matHeaderCellDef mat-sort-header>Jobber Name</th>
               <td mat-cell *matCellDef="let record">
-                <span class="jobber-name" [class.empty]="!record.JobberName || record.JobberName.trim() === ''">
-                  {{ record.JobberName || 'Not Assigned' }}
+                <span class="jobber-name" [class.empty]="!record.jobberName || record.jobberName.trim() === ''">
+                  {{ record.jobberName || 'Not Assigned' }}
                 </span>
               </td>
             </ng-container>
 
             <!-- Debit Qty Column -->
-            <ng-container matColumnDef="PurtDebitQty">
+            <ng-container matColumnDef="purtDebitQty">
               <th mat-header-cell *matHeaderCellDef mat-sort-header>Debit Qty</th>
-              <td mat-cell *matCellDef="let record">{{ record.PurtDebitQty }}</td>
+              <td mat-cell *matCellDef="let record">{{ record.purtDebitQty }}</td>
             </ng-container>
 
             <!-- Credit Qty Column -->
-            <ng-container matColumnDef="PurtCreditQty">
+            <ng-container matColumnDef="purtCreditQty">
               <th mat-header-cell *matHeaderCellDef mat-sort-header>Credit Qty</th>
-              <td mat-cell *matCellDef="let record">{{ record.PurtCreditQty }}</td>
+              <td mat-cell *matCellDef="let record">{{ record.purtCreditQty }}</td>
             </ng-container>
 
             <!-- Amount Column -->
-            <ng-container matColumnDef="Amount">
+            <ng-container matColumnDef="amount">
               <th mat-header-cell *matHeaderCellDef mat-sort-header>Amount</th>
-              <td mat-cell *matCellDef="let record" class="amount">{{ record.Amount | currency:'INR':'symbol':'1.2-2' }}</td>
+              <td mat-cell *matCellDef="let record" class="amount">{{ record.amount | currency:'INR':'symbol':'1.2-2' }}</td>
             </ng-container>
 
             <!-- Type Column -->
-            <ng-container matColumnDef="PurtType">
+            <ng-container matColumnDef="purtType">
               <th mat-header-cell *matHeaderCellDef mat-sort-header>Type</th>
               <td mat-cell *matCellDef="let record">
-                <span class="type-badge" [class]="'type-' + record.PurtType">
-                  {{ getPurtTypeDescription(record.PurtType) }}
+                <span class="type-badge" [class]="'type-' + record.purtType">
+                  {{ getPurtTypeDescription(record.purtType) }}
                 </span>
               </td>
             </ng-container>
 
-            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumns;" 
+            <tr mat-header-row *matHeaderRowDef="['docNo', 'docDate', 'customerName', 'productCode', 'productDesc', 'categoryDescription', 'jobberName', 'purtDebitQty', 'purtCreditQty', 'amount', 'purtType']"></tr>
+            <tr mat-row *matRowDef="let row; columns: ['docNo', 'docDate', 'customerName', 'productCode', 'productDesc', 'categoryDescription', 'jobberName', 'purtDebitQty', 'purtCreditQty', 'amount', 'purtType']" 
                 (click)="openDetailsDialog(row, 'pending')" 
                 class="clickable-row"></tr>
           </table>
@@ -162,57 +174,70 @@
 
         <div *ngIf="filteredReceived.length > 0" class="table-container">
           <table mat-table [dataSource]="filteredReceived" matSort class="alteration-table">
-            <ng-container matColumnDef="Id">
-              <th mat-header-cell *matHeaderCellDef mat-sort-header>ID</th>
-              <td mat-cell *matCellDef="let record">{{ record.Id }}</td>
+            <!-- Doc No Column -->
+            <ng-container matColumnDef="docNo">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Doc No</th>
+              <td mat-cell *matCellDef="let record">{{ getDocNo(record) }}</td>
             </ng-container>
 
-            <ng-container matColumnDef="ProductCode">
+            <!-- Doc Date Column -->
+            <ng-container matColumnDef="docDate">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Doc Date</th>
+              <td mat-cell *matCellDef="let record">{{ formatDate(record.docDate) }}</td>
+            </ng-container>
+
+            <!-- Customer Name Column -->
+            <ng-container matColumnDef="customerName">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Customer Name</th>
+              <td mat-cell *matCellDef="let record">{{ getCustomerName(record) }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="productCode">
               <th mat-header-cell *matHeaderCellDef mat-sort-header>Product Code</th>
-              <td mat-cell *matCellDef="let record">{{ record.ProductCode }}</td>
+              <td mat-cell *matCellDef="let record">{{ record.productCode }}</td>
             </ng-container>
 
-            <ng-container matColumnDef="ProductDesc">
+            <ng-container matColumnDef="productDesc">
               <th mat-header-cell *matHeaderCellDef mat-sort-header>Product Description</th>
-              <td mat-cell *matCellDef="let record" class="product-desc">{{ record.ProductDesc }}</td>
+              <td mat-cell *matCellDef="let record" class="product-desc">{{ record.productDesc }}</td>
             </ng-container>
 
-            <ng-container matColumnDef="CategoryDescription">
+            <ng-container matColumnDef="categoryDescription">
               <th mat-header-cell *matHeaderCellDef mat-sort-header>Category</th>
-              <td mat-cell *matCellDef="let record">{{ record.CategoryDescription }}</td>
+              <td mat-cell *matCellDef="let record">{{ record.categoryDescription }}</td>
             </ng-container>
 
-            <ng-container matColumnDef="JobberName">
+            <ng-container matColumnDef="jobberName">
               <th mat-header-cell *matHeaderCellDef mat-sort-header>Jobber Name</th>
-              <td mat-cell *matCellDef="let record">{{ record.JobberName || 'N/A' }}</td>
+              <td mat-cell *matCellDef="let record">{{ record.jobberName || 'N/A' }}</td>
             </ng-container>
 
-            <ng-container matColumnDef="PurtDebitQty">
+            <ng-container matColumnDef="purtDebitQty">
               <th mat-header-cell *matHeaderCellDef mat-sort-header>Debit Qty</th>
-              <td mat-cell *matCellDef="let record">{{ record.PurtDebitQty }}</td>
+              <td mat-cell *matCellDef="let record">{{ record.purtDebitQty }}</td>
             </ng-container>
 
-            <ng-container matColumnDef="PurtCreditQty">
+            <ng-container matColumnDef="purtCreditQty">
               <th mat-header-cell *matHeaderCellDef mat-sort-header>Credit Qty</th>
-              <td mat-cell *matCellDef="let record">{{ record.PurtCreditQty }}</td>
+              <td mat-cell *matCellDef="let record">{{ record.purtCreditQty }}</td>
             </ng-container>
 
-            <ng-container matColumnDef="Amount">
+            <ng-container matColumnDef="amount">
               <th mat-header-cell *matHeaderCellDef mat-sort-header>Amount</th>
-              <td mat-cell *matCellDef="let record" class="amount">{{ record.Amount | currency:'INR':'symbol':'1.2-2' }}</td>
+              <td mat-cell *matCellDef="let record" class="amount">{{ record.amount | currency:'INR':'symbol':'1.2-2' }}</td>
             </ng-container>
 
-            <ng-container matColumnDef="PurtType">
+            <ng-container matColumnDef="purtType">
               <th mat-header-cell *matHeaderCellDef mat-sort-header>Type</th>
               <td mat-cell *matCellDef="let record">
-                <span class="type-badge" [class]="'type-' + record.PurtType">
-                  {{ getPurtTypeDescription(record.PurtType) }}
+                <span class="type-badge" [class]="'type-' + record.purtType">
+                  {{ getPurtTypeDescription(record.purtType) }}
                 </span>
               </td>
             </ng-container>
 
-            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumns;" 
+            <tr mat-header-row *matHeaderRowDef="['docNo', 'docDate', 'customerName', 'productCode', 'productDesc', 'categoryDescription', 'jobberName', 'purtDebitQty', 'purtCreditQty', 'amount', 'purtType']"></tr>
+            <tr mat-row *matRowDef="let row; columns: ['docNo', 'docDate', 'customerName', 'productCode', 'productDesc', 'categoryDescription', 'jobberName', 'purtDebitQty', 'purtCreditQty', 'amount', 'purtType']" 
                 (click)="openDetailsDialog(row, 'received')" 
                 class="clickable-row"></tr>
           </table>
@@ -239,51 +264,57 @@
 
         <div *ngIf="filteredDelivered.length > 0" class="table-container">
           <table mat-table [dataSource]="filteredDelivered" matSort class="alteration-table">
-            <ng-container matColumnDef="Id">
-              <th mat-header-cell *matHeaderCellDef mat-sort-header>ID</th>
-              <td mat-cell *matCellDef="let record">{{ record.Id }}</td>
+            <!-- Doc No Column -->
+            <ng-container matColumnDef="docNo">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Doc No</th>
+              <td mat-cell *matCellDef="let record">{{ getDocNo(record) }}</td>
             </ng-container>
 
-            <ng-container matColumnDef="ProductCode">
-              <th mat-header-cell *matHeaderCellDef mat-sort-header>Product Code</th>
-              <td mat-cell *matCellDef="let record">{{ record.ProductCode }}</td>
+            <!-- Doc Date Column -->
+            <ng-container matColumnDef="docDate">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Doc Date</th>
+              <td mat-cell *matCellDef="let record">{{ formatDate(record.docDate) }}</td>
             </ng-container>
 
-            <ng-container matColumnDef="ProductDesc">
+            <!-- Customer Name Column -->
+            <ng-container matColumnDef="customerName">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Customer Name</th>
+              <td mat-cell *matCellDef="let record">{{ getCustomerName(record) }}</td>
+            </ng-container>
+            <ng-container matColumnDef="productDesc">
               <th mat-header-cell *matHeaderCellDef mat-sort-header>Product Description</th>
-              <td mat-cell *matCellDef="let record" class="product-desc">{{ record.ProductDesc }}</td>
+              <td mat-cell *matCellDef="let record" class="product-desc">{{ record.productDesc }}</td>
             </ng-container>
 
-            <ng-container matColumnDef="CategoryDescription">
+            <ng-container matColumnDef="categoryDescription">
               <th mat-header-cell *matHeaderCellDef mat-sort-header>Category</th>
-              <td mat-cell *matCellDef="let record">{{ record.CategoryDescription }}</td>
+              <td mat-cell *matCellDef="let record">{{ record.categoryDescription }}</td>
             </ng-container>
-
-            <ng-container matColumnDef="JobberName">
+            <ng-container matColumnDef="jobberName">
               <th mat-header-cell *matHeaderCellDef mat-sort-header>Jobber Name</th>
-              <td mat-cell *matCellDef="let record">{{ record.JobberName || 'N/A' }}</td>
+              <td mat-cell *matCellDef="let record">{{ record.jobberName || 'N/A' }}</td>
             </ng-container>
 
-            <ng-container matColumnDef="PurtDebitQty">
+            <ng-container matColumnDef="purtDebitQty">
               <th mat-header-cell *matHeaderCellDef mat-sort-header>Debit Qty</th>
-              <td mat-cell *matCellDef="let record">{{ record.PurtDebitQty }}</td>
+              <td mat-cell *matCellDef="let record">{{ record.purtDebitQty }}</td>
             </ng-container>
 
-            <ng-container matColumnDef="PurtCreditQty">
+            <ng-container matColumnDef="purtCreditQty">
               <th mat-header-cell *matHeaderCellDef mat-sort-header>Credit Qty</th>
-              <td mat-cell *matCellDef="let record">{{ record.PurtCreditQty }}</td>
+              <td mat-cell *matCellDef="let record">{{ record.purtCreditQty }}</td>
             </ng-container>
 
-            <ng-container matColumnDef="Amount">
+            <ng-container matColumnDef="amount">
               <th mat-header-cell *matHeaderCellDef mat-sort-header>Amount</th>
-              <td mat-cell *matCellDef="let record" class="amount">{{ record.Amount | currency:'INR':'symbol':'1.2-2' }}</td>
+              <td mat-cell *matCellDef="let record" class="amount">{{ record.amount | currency:'INR':'symbol':'1.2-2' }}</td>
             </ng-container>
 
-            <ng-container matColumnDef="PurtType">
+            <ng-container matColumnDef="purtType">
               <th mat-header-cell *matHeaderCellDef mat-sort-header>Type</th>
               <td mat-cell *matCellDef="let record">
-                <span class="type-badge" [class]="'type-' + record.PurtType">
-                  {{ getPurtTypeDescription(record.PurtType) }}
+                <span class="type-badge" [class]="'type-' + record.purtType">
+                  {{ getPurtTypeDescription(record.purtType) }}
                 </span>
               </td>
             </ng-container>

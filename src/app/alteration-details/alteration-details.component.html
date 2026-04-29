@@ -34,31 +34,43 @@
           <div class="info-grid">
             <div class="info-item">
               <span class="info-label">Record ID:</span>
-              <span class="info-value">{{ data.record.Id }}</span>
+              <span class="info-value">{{ data.record.id }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Doc No:</span>
+              <span class="info-value">{{ data.record.docNo || 'N/A' }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Doc Date:</span>
+              <span class="info-value">{{ formatDate(data.record.docDate || '') }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Customer Name:</span>
+              <span class="info-value">{{ data.record.customerName || 'N/A' }}</span>
             </div>
             <div class="info-item">
               <span class="info-label">Purchase ID:</span>
-              <span class="info-value">{{ data.record.PurtPurId }}</span>
+              <span class="info-value">{{ data.record.purtPurId }}</span>
             </div>
             <div class="info-item">
               <span class="info-label">Product Code:</span>
-              <span class="info-value">{{ data.record.ProductCode }}</span>
+              <span class="info-value">{{ data.record.productCode }}</span>
             </div>
             <div class="info-item">
               <span class="info-label">Barcode:</span>
-              <span class="info-value">{{ data.record.BarcodeDesc || 'N/A' }}</span>
+              <span class="info-value">{{ data.record.barcodeDesc || 'N/A' }}</span>
             </div>
             <div class="info-item full-width">
               <span class="info-label">Product Description:</span>
-              <span class="info-value">{{ data.record.ProductDesc }}</span>
+              <span class="info-value">{{ data.record.productDesc }}</span>
             </div>
             <div class="info-item">
               <span class="info-label">Category:</span>
-              <span class="info-value">{{ data.record.CategoryDescription }}</span>
+              <span class="info-value">{{ data.record.categoryDescription }}</span>
             </div>
             <div class="info-item">
               <span class="info-label">Department:</span>
-              <span class="info-value">{{ data.record.DeptDescription }}</span>
+              <span class="info-value">{{ data.record.deptDescription }}</span>
             </div>
           </div>
         </mat-card-content>
@@ -76,41 +88,41 @@
           <div class="info-grid">
             <div class="info-item">
               <span class="info-label">Type:</span>
-              <span class="info-value type-badge" [class]="'type-' + data.record.PurtType">
-                {{ getTypeDescription(data.record.PurtType) }}
+              <span class="info-value type-badge" [class]="'type-' + data.record.purtType">
+                {{ getTypeDescription(data.record.purtType) }}
               </span>
             </div>
             <div class="info-item">
               <span class="info-label">Client ID:</span>
-              <span class="info-value">{{ data.record.ClientId }}</span>
+              <span class="info-value">{{ data.record.clientId }}</span>
             </div>
             <div class="info-item">
               <span class="info-label">Rate:</span>
-              <span class="info-value">{{ formatCurrency(data.record.PurtRate) }}</span>
+              <span class="info-value">{{ formatCurrency(data.record.purtRate) }}</span>
             </div>
             <div class="info-item">
               <span class="info-label">MRP:</span>
-              <span class="info-value">{{ formatCurrency(data.record.PurtMrp) }}</span>
+              <span class="info-value">{{ formatCurrency(data.record.purtMrp) }}</span>
             </div>
             <div class="info-item">
               <span class="info-label">Selling Price:</span>
-              <span class="info-value">{{ formatCurrency(data.record.PurtSelPrice) }}</span>
+              <span class="info-value">{{ formatCurrency(data.record.purtSelPrice) }}</span>
             </div>
             <div class="info-item">
               <span class="info-label">Debit Qty:</span>
-              <span class="info-value">{{ data.record.PurtDebitQty }}</span>
+              <span class="info-value">{{ data.record.purtDebitQty }}</span>
             </div>
             <div class="info-item">
               <span class="info-label">Credit Qty:</span>
-              <span class="info-value">{{ data.record.PurtCreditQty }}</span>
+              <span class="info-value">{{ data.record.purtCreditQty }}</span>
             </div>
             <div class="info-item">
               <span class="info-label">Amount:</span>
-              <span class="info-value amount">{{ formatCurrency(data.record.Amount) }}</span>
+              <span class="info-value amount">{{ formatCurrency(data.record.amount) }}</span>
             </div>
             <div class="info-item">
               <span class="info-label">Discount:</span>
-              <span class="info-value">{{ formatCurrency(data.record.DiscountAmount) }}</span>
+              <span class="info-value">{{ formatCurrency(data.record.discountAmount) }}</span>
             </div>
           </div>
         </mat-card-content>
@@ -128,44 +140,44 @@
           <div class="info-grid">
             <div class="info-item">
               <span class="info-label">Jobber Name:</span>
-              <span class="info-value" [class.empty]="!data.record.JobberName">
-                {{ data.record.JobberName || 'Not Assigned' }}
+              <span class="info-value" [class.empty]="!data.record.jobberName">
+                {{ data.record.jobberName || 'Not Assigned' }}
               </span>
             </div>
             <div class="info-item">
               <span class="info-label">Alteration Marked:</span>
               <span class="info-value">
-                <mat-icon [style.color]="data.record.PurtAlteration ? '#4caf50' : '#f44336'">
-                  {{ data.record.PurtAlteration ? 'check_circle' : 'cancel' }}
+                <mat-icon [style.color]="data.record.purtAlteration ? '#4caf50' : '#f44336'">
+                  {{ data.record.purtAlteration ? 'check_circle' : 'cancel' }}
                 </mat-icon>
-                {{ data.record.PurtAlteration ? 'Yes' : 'No' }}
+                {{ data.record.purtAlteration ? 'Yes' : 'No' }}
               </span>
             </div>
             <div class="info-item">
               <span class="info-label">Received:</span>
               <span class="info-value">
-                <mat-icon [style.color]="data.record.PurtReceived ? '#4caf50' : '#f44336'">
-                  {{ data.record.PurtReceived ? 'check_circle' : 'cancel' }}
+                <mat-icon [style.color]="data.record.purtReceived ? '#4caf50' : '#f44336'">
+                  {{ data.record.purtReceived ? 'check_circle' : 'cancel' }}
                 </mat-icon>
-                {{ data.record.PurtReceived ? 'Yes' : 'No' }}
+                {{ data.record.purtReceived ? 'Yes' : 'No' }}
               </span>
             </div>
             <div class="info-item">
               <span class="info-label">Delivered:</span>
               <span class="info-value">
-                <mat-icon [style.color]="data.record.PurtDelivered ? '#4caf50' : '#f44336'">
-                  {{ data.record.PurtDelivered ? 'check_circle' : 'cancel' }}
+                <mat-icon [style.color]="data.record.purtDelivered ? '#4caf50' : '#f44336'">
+                  {{ data.record.purtDelivered ? 'check_circle' : 'cancel' }}
                 </mat-icon>
-                {{ data.record.PurtDelivered ? 'Yes' : 'No' }}
+                {{ data.record.purtDelivered ? 'Yes' : 'No' }}
               </span>
             </div>
-            <div class="info-item" *ngIf="data.record.PurtReceivedDate">
+            <div class="info-item" *ngIf="data.record.purtReceivedDate">
               <span class="info-label">Received Date:</span>
-              <span class="info-value">{{ formatDate(data.record.PurtReceivedDate) }}</span>
+              <span class="info-value">{{ formatDate(data.record.purtReceivedDate) }}</span>
             </div>
-            <div class="info-item" *ngIf="data.record.PurtDeliveredDate">
+            <div class="info-item" *ngIf="data.record.purtDeliveredDate">
               <span class="info-label">Delivered Date:</span>
-              <span class="info-value">{{ formatDate(data.record.PurtDeliveredDate) }}</span>
+              <span class="info-value">{{ formatDate(data.record.purtDeliveredDate) }}</span>
             </div>
           </div>
         </mat-card-content>

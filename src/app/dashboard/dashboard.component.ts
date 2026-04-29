@@ -164,7 +164,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       console.log('  ClientId:', currentClientId);
       console.log('  CompanyName:', currentCompanyName);
       
-      if (currentUserGroupId) {
+      if (currentUserGroupId !== null && currentUserGroupId !== undefined) {
         this.currentUserGroupId = currentUserGroupId;
         
         try {
@@ -460,7 +460,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
             totalAmount: data?.sales?.totalAmount
           });
           
-          this.dashboardData = data;
+          this.dashboardData = {
+            purchase: data?.purchase || { totalBills: 0, totalQuantity: 0, totalAmount: 0 },
+            sales: data?.sales || { totalBills: 0, totalQuantity: 0, totalAmount: 0 },
+            purchaseDetails: data?.purchaseDetails || [],
+            salesDetails: data?.salesDetails || []
+          };
           this.isLoading = false;
           
           setTimeout(() => {

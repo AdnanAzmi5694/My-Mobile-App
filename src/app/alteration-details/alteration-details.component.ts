@@ -17,7 +17,7 @@ import { AlterationRecord, AlterationDetailsDialogData } from '../models/dashboa
     MatDialogModule
   ],
   templateUrl: './alteration-details.component.html',
-  styleUrl: './alteration-details.component.scss'
+  styleUrls: ['./alteration-details.component.scss']
 })
 export class AlterationDetailsComponent {
   constructor(
@@ -41,7 +41,8 @@ export class AlterationDetailsComponent {
     return new Date(date).toLocaleDateString('en-IN');
   }
 
-  getTypeDescription(type: number): string {
+  getTypeDescription(type: string | number): string {
+    const typeNumber = typeof type === 'string' ? Number(type) : type;
     const types: { [key: number]: string } = {
       2: 'Purchase',
       3: 'Purchase Return',
@@ -52,7 +53,7 @@ export class AlterationDetailsComponent {
       8: 'Sales Return',
       9: 'Sales Return Approval'
     };
-    return types[type] || `Type ${type}`;
+    return types[typeNumber] || `Type ${type}`;
   }
 
   getStatusDescription(): string {

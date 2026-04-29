@@ -22,11 +22,19 @@ export class AuthService {
         if (typeof window !== 'undefined' && res.token) {
           localStorage.setItem('access_token', res.token);
         }
-        if (typeof window !== 'undefined' && res.clientId) {
-          localStorage.setItem('client_id', res.clientId);
+        
+        const clientId = res.clientId ?? res.ClientId;
+        if (typeof window !== 'undefined' && clientId !== undefined && clientId !== null) {
+          localStorage.setItem('client_id', clientId.toString());
         }
+        
         if (typeof window !== 'undefined' && res.companyName) {
           localStorage.setItem('company_name', res.companyName);
+        }
+
+        const userGroupId = res.userGroupId ?? res.UserGroupId;
+        if (typeof window !== 'undefined' && userGroupId !== undefined && userGroupId !== null) {
+          localStorage.setItem('user_group_id', userGroupId.toString());
         }
       })
     );
@@ -45,12 +53,17 @@ export class AuthService {
 
   getUserGroupId(): number | null {
     if (typeof window !== 'undefined') {
+      const storedGroupId = localStorage.getItem('user_group_id');
+      if (storedGroupId) {
+        return Number(storedGroupId);
+      }
+      
       const token = localStorage.getItem('access_token');
       if (token) {
         try {
           const payload = JSON.parse(atob(token.split('.')[1]));
           console.log('JWT Payload:', payload); // Debug log
-          return payload.UserGroupId || null;
+          return payload.UserGroupId || payload.userGroupId || null;
         } catch (error) {
           console.error('Error decoding token:', error);
           return null;
@@ -116,6 +129,7 @@ export class AuthService {
       localStorage.removeItem('access_token');
       localStorage.removeItem('client_id');
       localStorage.removeItem('company_name');
+      localStorage.removeItem('user_group_id');
     }
   }
 

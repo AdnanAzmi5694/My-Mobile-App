@@ -63,8 +63,8 @@ export class JobberAlterationComponent implements OnInit {
 
   // Table columns
   displayedColumns: string[] = [
-    'Id', 'ProductCode', 'ProductDesc', 'CategoryDescription',
-    'JobberName', 'PurtDebitQty', 'PurtCreditQty', 'Amount', 'PurtType'
+    'docNo', 'docDate', 'customerName', 'productCode', 'productDesc', 'categoryDescription',
+    'jobberName', 'purtDebitQty', 'purtCreditQty', 'amount', 'purtType'
   ];
 
   constructor(
@@ -108,14 +108,14 @@ export class JobberAlterationComponent implements OnInit {
   private filterRecords(records: AlterationRecord[], filters: any): AlterationRecord[] {
     return records.filter(record => {
       const jobberMatch = !filters.jobberName ||
-        record.JobberName?.toLowerCase().includes(filters.jobberName.toLowerCase());
+        record.jobberName?.toLowerCase().includes(filters.jobberName.toLowerCase());
 
       const productMatch = !filters.productCode ||
-        record.ProductCode?.toLowerCase().includes(filters.productCode.toLowerCase()) ||
-        record.ProductDesc?.toLowerCase().includes(filters.productCode.toLowerCase());
+        record.productCode?.toLowerCase().includes(filters.productCode.toLowerCase()) ||
+        record.productDesc?.toLowerCase().includes(filters.productCode.toLowerCase());
 
       const categoryMatch = !filters.category ||
-        record.CategoryDescription?.toLowerCase().includes(filters.category.toLowerCase());
+        record.categoryDescription?.toLowerCase().includes(filters.category.toLowerCase());
 
       return jobberMatch && productMatch && categoryMatch;
     });
@@ -150,7 +150,13 @@ export class JobberAlterationComponent implements OnInit {
     this.searchForm.reset();
   }
 
-  getPurtTypeDescription(type: number): string {
+  formatDate(date: string | Date | null | undefined): string {
+    if (!date) return 'N/A';
+    return new Date(date).toLocaleDateString('en-IN');
+  }
+
+  getPurtTypeDescription(type: string | number): string {
+    const typeNumber = typeof type === 'string' ? Number(type) : type;
     const types: { [key: number]: string } = {
       2: 'Purchase',
       3: 'Purchase Return',
@@ -161,7 +167,30 @@ export class JobberAlterationComponent implements OnInit {
       8: 'Sales Return',
       9: 'Sales Return Approval'
     };
-    return types[type] || `Type ${type}`;
+    return types[typeNumber] || `Type ${type}`;
+  }
+
+  getDocNo(record: AlterationRecord): string {
+    const anyRecord = record as any;
+    return (
+      record.docNo ??
+      anyRecord?.DocNo ??
+      anyRecord?.docno ??
+      anyRecord?.docNumber ??
+      anyRecord?.DocNumber ??
+      ''
+    );
+  }
+
+  getCustomerName(record: AlterationRecord): string {
+    const anyRecord = record as any;
+    return (
+      record.customerName ??
+      anyRecord?.CustomerName ??
+      anyRecord?.customer ??
+      anyRecord?.customer_name ??
+      ''
+    );
   }
 
   openDetailsDialog(record: AlterationRecord, type: 'pending' | 'received' | 'delivered'): void {

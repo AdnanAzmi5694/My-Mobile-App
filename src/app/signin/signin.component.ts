@@ -52,7 +52,7 @@ export class SigninComponent {
     this.isLoading = true;
     this.authService.login(this.loginForm.value).subscribe({
       next: () => {
-        this.snackBar.open('Login successful! Loading dashboard with last 15 days data...', 'Close', { 
+        this.snackBar.open('Login successful! Loading dashboard...', 'Close', { 
           duration: 3000,
           panelClass: ['success-snackbar']
         });
@@ -68,6 +68,9 @@ export class SigninComponent {
           duration: 4000,
           panelClass: ['error-snackbar']
         });
+        
+        // Fix: Reset loading state on error
+        this.isLoading = false;
       },
       complete: () => {
         this.isLoading = false;
