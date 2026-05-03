@@ -201,34 +201,6 @@
       </div>
       
       <div class="summary-row">
-        <!-- Purchase Summary Card -->
-        <mat-card class="summary-card purchase-card" (click)="openDetailsDialog('purchase')">
-          <mat-card-content>
-            <div class="card-header">
-              <mat-icon class="card-icon purchase-icon">shopping_cart</mat-icon>
-              <h3 class="card-title">Purchase Summary</h3>
-              <mat-icon class="click-hint">visibility</mat-icon>
-            </div>
-            <div class="card-stats">
-              <div class="stat-item">
-                <span class="stat-label">Total Bills</span>
-                <span class="stat-value">{{ formatNumber(dashboardData.purchase.totalBills) }}</span>
-              </div>
-              <div class="stat-item">
-                <span class="stat-label">Total Quantity</span>
-                <span class="stat-value">{{ formatNumber(dashboardData.purchase.totalQuantity) }}</span>
-              </div>
-              <div class="stat-item">
-                <span class="stat-label">Total Amount</span>
-                <span class="stat-value">{{ formatCurrency(dashboardData.purchase.totalAmount) }}</span>
-              </div>
-            </div>
-            <div class="card-footer">
-              <span class="click-text">Click to view details</span>
-            </div>
-          </mat-card-content>
-        </mat-card>
-
         <!-- Sales Summary Card -->
         <mat-card class="summary-card sales-card" (click)="openDetailsDialog('sales')">
           <mat-card-content>
@@ -249,6 +221,34 @@
               <div class="stat-item">
                 <span class="stat-label">Total Amount</span>
                 <span class="stat-value">{{ formatCurrency(dashboardData.sales.totalAmount) }}</span>
+              </div>
+            </div>
+            <div class="card-footer">
+              <span class="click-text">Click to view details</span>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Purchase Summary Card -->
+        <mat-card class="summary-card purchase-card" (click)="openDetailsDialog('purchase')">
+          <mat-card-content>
+            <div class="card-header">
+              <mat-icon class="card-icon purchase-icon">shopping_cart</mat-icon>
+              <h3 class="card-title">Purchase Summary</h3>
+              <mat-icon class="click-hint">visibility</mat-icon>
+            </div>
+            <div class="card-stats">
+              <div class="stat-item">
+                <span class="stat-label">Total Bills</span>
+                <span class="stat-value">{{ formatNumber(dashboardData.purchase.totalBills) }}</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">Total Quantity</span>
+                <span class="stat-value">{{ formatNumber(dashboardData.purchase.totalQuantity) }}</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">Total Amount</span>
+                <span class="stat-value">{{ formatCurrency(dashboardData.purchase.totalAmount) }}</span>
               </div>
             </div>
             <div class="card-footer">

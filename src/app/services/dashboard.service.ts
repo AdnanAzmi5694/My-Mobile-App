@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, firstValueFrom } from 'rxjs';
 import { AuthService } from './auth.service';
 import { DashboardSummary, TransactionDetail } from '../models/dashboard.models';
 import { environment } from '../../environments/environment';
@@ -129,5 +129,54 @@ export class DashboardService {
       headers: this.getHeaders(),
       params
     });
+  }
+
+  /** Normalize jobber-alteration API body to a row array (handles common envelope shapes). */
+  normalizeAlterationRows(response: any): any[] {
+    if (response == null) return [];
+    if (Array.isArray(response)) return response;
+    const d = response.data;
+    if (Array.isArray(d)) return d;
+    if (d && typeof d === 'object') {
+      if (Array.isArray(d.items)) return d.items;
+      if (Array.isArray(d.records)) return d.records;
+      if (Array.isArray(d.results)) return d.results;
+    }
+    if (Array.isArray(response.items)) return response.items;
+    return [];
+  }
+
+  private getAlterationTotalCount(response: any): number | undefined {
+    const raw =
+      response?.totalCount ??
+      response?.total ??
+      response?.count ??
+      response?.data?.totalCount ??
+      response?.data?.total ??
+      response?.data?.count;
+    const n = typeof raw === 'string' ? parseInt(raw, 10) : raw;
+    return typeof n === 'number' && !isNaN(n) ? n : undefined;
+  }
+
+  /**
+   * Follows server pagination until all rows are loaded (many APIs ignore requested pageSize and cap at ~10–20).
+   */
+  async loadAllAlterationPages(
+    fetchPage: (page: number, pageSize: number) => Observable<any>,
+    requestPageSize = 100
+  ): Promise<any[]> {
+    const combined: any[] = [];
+    let page = 1;
+    const maxPages = 500;
+    while (page <= maxPages) {
+      const res = await firstValueFrom(fetchPage(page, requestPageSize));
+      const chunk = this.normalizeAlterationRows(res);
+      combined.push(...chunk);
+      const total = this.getAlterationTotalCount(res);
+      if (chunk.length < requestPageSize) break;
+      if (total !== undefined && combined.length >= total) break;
+      page++;
+    }
+    return combined;
   }
 } 

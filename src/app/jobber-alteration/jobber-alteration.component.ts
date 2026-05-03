@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
@@ -7,9 +7,9 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { MatTableModule } from '@angular/material/table';
-import { MatPaginatorModule } from '@angular/material/paginator';
-import { MatSortModule } from '@angular/material/sort';
+import { MatTableModule, MatTableDataSource } from '@angular/material/table';
+import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
+import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
@@ -47,7 +47,7 @@ import { AlterationDetailsComponent } from '../alteration-details/alteration-det
   templateUrl: './jobber-alteration.component.html',
   styleUrls: ['./jobber-alteration.component.scss']
 })
-export class JobberAlterationComponent implements OnInit {
+export class JobberAlterationComponent implements OnInit, AfterViewInit {
   searchForm: FormGroup;
   isLoading = false;
 
@@ -60,6 +60,17 @@ export class JobberAlterationComponent implements OnInit {
   filteredPending: AlterationRecord[] = [];
   filteredReceived: AlterationRecord[] = [];
   filteredDelivered: AlterationRecord[] = [];
+
+  pendingDataSource = new MatTableDataSource<AlterationRecord>([]);
+  receivedDataSource = new MatTableDataSource<AlterationRecord>([]);
+  deliveredDataSource = new MatTableDataSource<AlterationRecord>([]);
+
+  @ViewChild('pendingPag') private pendingPag?: MatPaginator;
+  @ViewChild('pendingSort') private pendingSort?: MatSort;
+  @ViewChild('receivedPag') private receivedPag?: MatPaginator;
+  @ViewChild('receivedSort') private receivedSort?: MatSort;
+  @ViewChild('deliveredPag') private deliveredPag?: MatPaginator;
+  @ViewChild('deliveredSort') private deliveredSort?: MatSort;
 
   // Table columns
   displayedColumns: string[] = [
@@ -79,6 +90,9 @@ export class JobberAlterationComponent implements OnInit {
       productCode: [''],
       category: ['']
     });
+    this.configureSortAccessor(this.pendingDataSource);
+    this.configureSortAccessor(this.receivedDataSource);
+    this.configureSortAccessor(this.deliveredDataSource);
   }
 
   ngOnInit(): void {
@@ -89,6 +103,48 @@ export class JobberAlterationComponent implements OnInit {
 
     this.loadAlterationData();
     this.setupSearchFilters();
+  }
+
+  ngAfterViewInit(): void {
+    this.connectTableWidgets();
+  }
+
+  onAlterationTabChange(index: number): void {
+    setTimeout(() => this.connectTableWidgets(index));
+  }
+
+  private configureSortAccessor(ds: MatTableDataSource<AlterationRecord>): void {
+    ds.sortingDataAccessor = (row: AlterationRecord, columnId: string) => {
+      switch (columnId) {
+        case 'docNo':
+          return this.getDocNo(row);
+        case 'customerName':
+          return this.getCustomerName(row);
+        case 'docDate':
+          return row.docDate ? new Date(row.docDate).getTime() : 0;
+        case 'amount':
+          return Number(row.amount) || 0;
+        default: {
+          const v = (row as any)[columnId];
+          return v == null ? '' : v;
+        }
+      }
+    };
+  }
+
+  private connectTableWidgets(activeTabIndex?: number): void {
+    if (this.pendingPag && this.pendingSort && (activeTabIndex === undefined || activeTabIndex === 0)) {
+      this.pendingDataSource.paginator = this.pendingPag;
+      this.pendingDataSource.sort = this.pendingSort;
+    }
+    if (this.receivedPag && this.receivedSort && (activeTabIndex === undefined || activeTabIndex === 1)) {
+      this.receivedDataSource.paginator = this.receivedPag;
+      this.receivedDataSource.sort = this.receivedSort;
+    }
+    if (this.deliveredPag && this.deliveredSort && (activeTabIndex === undefined || activeTabIndex === 2)) {
+      this.deliveredDataSource.paginator = this.deliveredPag;
+      this.deliveredDataSource.sort = this.deliveredSort;
+    }
   }
 
   private setupSearchFilters(): void {
@@ -103,6 +159,14 @@ export class JobberAlterationComponent implements OnInit {
     this.filteredPending = this.filterRecords(this.pendingAlterations, filters);
     this.filteredReceived = this.filterRecords(this.receivedAlterations, filters);
     this.filteredDelivered = this.filterRecords(this.deliveredAlterations, filters);
+
+    this.pendingDataSource.data = this.filteredPending;
+    this.receivedDataSource.data = this.filteredReceived;
+    this.deliveredDataSource.data = this.filteredDelivered;
+
+    this.pendingPag?.firstPage();
+    this.receivedPag?.firstPage();
+    this.deliveredPag?.firstPage();
   }
 
   private filterRecords(records: AlterationRecord[], filters: any): AlterationRecord[] {
@@ -126,17 +190,21 @@ export class JobberAlterationComponent implements OnInit {
     try {
       const clientId = Number(this.authService.getClientId() || 0);
 
-      const [pendingResponse, receivedResponse, deliveredResponse] = await Promise.all([
-        this.dashboardService.getPendingAlterations(undefined, undefined, undefined, clientId, 1, 1000).toPromise(),
-        this.dashboardService.getReceivedAlterations(undefined, undefined, undefined, clientId, 1, 1000).toPromise(),
-        this.dashboardService.getDeliveredAlterations(undefined, undefined, undefined, clientId, 1, 1000).toPromise()
+      const [pendingRows, receivedRows, deliveredRows] = await Promise.all([
+        this.dashboardService.loadAllAlterationPages((p, ps) =>
+          this.dashboardService.getPendingAlterations(undefined, undefined, undefined, clientId, p, ps)),
+        this.dashboardService.loadAllAlterationPages((p, ps) =>
+          this.dashboardService.getReceivedAlterations(undefined, undefined, undefined, clientId, p, ps)),
+        this.dashboardService.loadAllAlterationPages((p, ps) =>
+          this.dashboardService.getDeliveredAlterations(undefined, undefined, undefined, clientId, p, ps))
       ]);
 
-      this.pendingAlterations = pendingResponse?.data || [];
-      this.receivedAlterations = receivedResponse?.data || [];
-      this.deliveredAlterations = deliveredResponse?.data || [];
+      this.pendingAlterations = pendingRows;
+      this.receivedAlterations = receivedRows;
+      this.deliveredAlterations = deliveredRows;
 
       this.applyFilters();
+      setTimeout(() => this.connectTableWidgets());
 
     } catch (error) {
       console.error('Error loading alteration data:', error);

@@ -54,7 +54,7 @@
   </div>
 
   <!-- Tabs Section -->
-  <mat-tab-group *ngIf="!isLoading" class="alteration-tabs">
+  <mat-tab-group *ngIf="!isLoading" class="alteration-tabs" (selectedTabChange)="onAlterationTabChange($event.index)">
     <!-- Pending Alteration Tab -->
     <mat-tab label="Pending Alteration ({{ filteredPending.length }})">
       <div class="tab-content">
@@ -71,7 +71,7 @@
         </div>
 
         <div *ngIf="filteredPending.length > 0" class="table-container">
-          <table mat-table [dataSource]="filteredPending" matSort class="alteration-table">
+          <table mat-table [dataSource]="pendingDataSource" matSort #pendingSort="matSort" class="alteration-table">
             <!-- Doc No Column -->
             <ng-container matColumnDef="docNo">
               <th mat-header-cell *matHeaderCellDef mat-sort-header>Doc No</th>
@@ -152,7 +152,7 @@
                 class="clickable-row"></tr>
           </table>
 
-          <mat-paginator [pageSizeOptions]="[10, 25, 50]" showFirstLastButtons></mat-paginator>
+          <mat-paginator #pendingPag [pageSizeOptions]="[10, 25, 50, 100]" showFirstLastButtons></mat-paginator>
         </div>
       </div>
     </mat-tab>
@@ -173,7 +173,7 @@
         </div>
 
         <div *ngIf="filteredReceived.length > 0" class="table-container">
-          <table mat-table [dataSource]="filteredReceived" matSort class="alteration-table">
+          <table mat-table [dataSource]="receivedDataSource" matSort #receivedSort="matSort" class="alteration-table">
             <!-- Doc No Column -->
             <ng-container matColumnDef="docNo">
               <th mat-header-cell *matHeaderCellDef mat-sort-header>Doc No</th>
@@ -242,7 +242,7 @@
                 class="clickable-row"></tr>
           </table>
 
-          <mat-paginator [pageSizeOptions]="[10, 25, 50]" showFirstLastButtons></mat-paginator>
+          <mat-paginator #receivedPag [pageSizeOptions]="[10, 25, 50, 100]" showFirstLastButtons></mat-paginator>
         </div>
       </div>
     </mat-tab>
@@ -263,7 +263,7 @@
         </div>
 
         <div *ngIf="filteredDelivered.length > 0" class="table-container">
-          <table mat-table [dataSource]="filteredDelivered" matSort class="alteration-table">
+          <table mat-table [dataSource]="deliveredDataSource" matSort #deliveredSort="matSort" class="alteration-table">
             <!-- Doc No Column -->
             <ng-container matColumnDef="docNo">
               <th mat-header-cell *matHeaderCellDef mat-sort-header>Doc No</th>
@@ -281,6 +281,12 @@
               <th mat-header-cell *matHeaderCellDef mat-sort-header>Customer Name</th>
               <td mat-cell *matCellDef="let record">{{ getCustomerName(record) }}</td>
             </ng-container>
+
+            <ng-container matColumnDef="productCode">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Product Code</th>
+              <td mat-cell *matCellDef="let record">{{ record.productCode }}</td>
+            </ng-container>
+
             <ng-container matColumnDef="productDesc">
               <th mat-header-cell *matHeaderCellDef mat-sort-header>Product Description</th>
               <td mat-cell *matCellDef="let record" class="product-desc">{{ record.productDesc }}</td>
@@ -325,7 +331,7 @@
                 class="clickable-row"></tr>
           </table>
 
-          <mat-paginator [pageSizeOptions]="[10, 25, 50]" showFirstLastButtons></mat-paginator>
+          <mat-paginator #deliveredPag [pageSizeOptions]="[10, 25, 50, 100]" showFirstLastButtons></mat-paginator>
         </div>
       </div>
     </mat-tab>
