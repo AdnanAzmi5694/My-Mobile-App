@@ -83,20 +83,20 @@ export class SignUpComponent {
 
       this.authService.register(signupData).subscribe({
         next: () => {
-          this.snackBar.open('Registration successful! Please sign in.', 'Close', { 
-            duration: 3000,
-            panelClass: ['success-snackbar']
-          });
-          this.router.navigate(['/signin']);
+          this.snackBar.open(
+            'Registration submitted. An administrator will activate your account before you can sign in.',
+            'Close',
+            { duration: 6000, panelClass: ['success-snackbar'] }
+          );
+          this.signupForm.reset();
+          this.isLoading = false;
         },
         error: (err: any) => {
           const message = err.error?.error || err.error?.message || 'Registration failed. Please try again.';
-          this.snackBar.open(message, 'Close', { 
+          this.snackBar.open(message, 'Close', {
             duration: 4000,
             panelClass: ['error-snackbar']
           });
-        },
-        complete: () => {
           this.isLoading = false;
         }
       });

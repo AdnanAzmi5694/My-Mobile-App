@@ -40,15 +40,8 @@ export class AuthService {
     );
   }
 
-  register(userData: { Username: string; Email: string; Password: string; MobileNmbr?: string }): Observable<any> {
-    const body = {
-      Username: userData.Username,
-      Email: userData.Email,
-      Password: userData.Password,
-      MobileNmbr: userData.MobileNmbr
-    };
-
-    return this.http.post(`${this.baseUrl}/register`, body);
+  register(userData: { Username: string; Email: string; Password: string; MobileNumber?: string | null }): Observable<any> {
+    return this.http.post(`${this.baseUrl}/register`, userData);
   }
 
   getUserGroupId(): number | null {
