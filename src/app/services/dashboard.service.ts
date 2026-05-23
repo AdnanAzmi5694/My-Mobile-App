@@ -13,6 +13,7 @@ export class DashboardService {
   
   private dashboardBaseUrl = `${environment.apiUrl}Dashboard`;
   private jobberAlterationBaseUrl = `${environment.apiUrl}jobberalteration`;
+  private outstandingBaseUrl = `${environment.apiUrl}Outstanding`;
 
   constructor(
     private http: HttpClient,
@@ -76,6 +77,17 @@ export class DashboardService {
   testConnection(): Observable<any> {
     return this.http.get(`${this.dashboardBaseUrl}/test`, {
       headers: this.getHeaders()
+    });
+  }
+
+  getOutstandingBalances(clientId: number = 0): Observable<any> {
+    const params: any = {};
+    if (clientId !== null && clientId !== undefined) {
+      params.clientId = clientId.toString();
+    }
+    return this.http.get(`${this.outstandingBaseUrl}`, {
+      headers: this.getHeaders(),
+      params
     });
   }
 

@@ -21,15 +21,37 @@ export interface TransactionDetail {
 }
 
 export interface DetailsDialogData {
-  type: 'purchase' | 'sales';
+  type: 'purchase' | 'sales' | 'outstanding';
   fromDate: Date;
   toDate: Date;
   clientId: number;
   summary: {
-    totalBills: number;
-    totalQuantity: number;
-    totalAmount: number;
+    totalBills?: number;
+    totalQuantity?: number;
+    totalAmount?: number;
+    totalNetOutstanding?: number;
+    totalCustomers?: number;
+    averageOutstandingDays?: number;
   };
+}
+
+export interface OutstandingTotals {
+  totalNetOutstanding: number;
+  totalCustomers: number;
+  averageOutstandingDays: number;
+}
+
+export interface OutstandingDetail {
+  customerId: number;
+  customerName: string;
+  customerMobile: string | null;
+  netOutstanding: number;
+  avgOutstandingDays: number;
+}
+
+export interface OutstandingResponse {
+  totals: OutstandingTotals;
+  details: OutstandingDetail[];
 }
 
 export interface AlterationRecord {

@@ -32,7 +32,7 @@ import { Subject, takeUntil } from 'rxjs';
   styleUrl: './details.component.scss'
 })
 export class DetailsComponent implements OnInit, OnDestroy {
-  transactionDetails: TransactionDetail[] = [];
+  transactionDetails: any[] = [];
   isLoading = false;
   displayedColumns: string[] = ['docNo', 'docDate', 'quantity', 'amount'];
   private destroy$ = new Subject<void>();
@@ -45,6 +45,9 @@ export class DetailsComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    this.displayedColumns = this.data.type === 'outstanding'
+      ? ['customerId', 'customerName', 'customerMobile', 'netOutstanding', 'avgOutstandingDays']
+      : ['docNo', 'docDate', 'quantity', 'amount'];
     this.loadTransactionDetails();
   }
 
@@ -55,7 +58,34 @@ export class DetailsComponent implements OnInit, OnDestroy {
 
   loadTransactionDetails(): void {
     this.isLoading = true;
-    
+    if (this.data.type === 'outstanding') {
+      this.dashboardService.getOutstandingBalances(this.data.clientId)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (outstandingData) => {
+            this.transactionDetails = Array.isArray(outstandingData?.details) ? outstandingData.details : [];
+            if (outstandingData?.totals) {
+              this.data.summary = {
+                ...this.data.summary,
+                totalNetOutstanding: outstandingData.totals.totalNetOutstanding,
+                totalCustomers: outstandingData.totals.totalCustomers,
+                averageOutstandingDays: outstandingData.totals.averageOutstandingDays
+              };
+            }
+            this.isLoading = false;
+          },
+          error: (err: any) => {
+            const message = err.error?.error || 'Failed to load outstanding details';
+            this.snackBar.open(message, 'Close', {
+              duration: 4000,
+              panelClass: ['error-snackbar']
+            });
+            this.isLoading = false;
+          }
+        });
+      return;
+    }
+
     this.dashboardService.getDashboardSummary(
       this.data.fromDate,
       this.data.toDate,
@@ -64,14 +94,14 @@ export class DetailsComponent implements OnInit, OnDestroy {
       takeUntil(this.destroy$)
     ).subscribe({
       next: (dashboardData) => {
-        this.transactionDetails = this.data.type === 'purchase' 
-          ? dashboardData.purchaseDetails 
+        this.transactionDetails = this.data.type === 'purchase'
+          ? dashboardData.purchaseDetails
           : dashboardData.salesDetails;
         this.isLoading = false;
       },
       error: (err: any) => {
         const message = err.error?.error || 'Failed to load transaction details';
-        this.snackBar.open(message, 'Close', { 
+        this.snackBar.open(message, 'Close', {
           duration: 4000,
           panelClass: ['error-snackbar']
         });
@@ -100,14 +130,20 @@ export class DetailsComponent implements OnInit, OnDestroy {
   }
 
   getTypeTitle(): string {
-    return this.data.type === 'purchase' ? 'Purchase' : 'Sales';
+    if (this.data.type === 'purchase') return 'Purchase';
+    if (this.data.type === 'sales') return 'Sales';
+    return 'Outstanding';
   }
 
   getTypeIcon(): string {
-    return this.data.type === 'purchase' ? 'shopping_cart' : 'point_of_sale';
+    if (this.data.type === 'purchase') return 'shopping_cart';
+    if (this.data.type === 'sales') return 'point_of_sale';
+    return 'account_balance_wallet';
   }
 
   getTypeColor(): string {
-    return this.data.type === 'purchase' ? '#e74c3c' : '#27ae60';
+    if (this.data.type === 'purchase') return '#e74c3c';
+    if (this.data.type === 'sales') return '#27ae60';
+    return '#ffb300';
   }
 } 

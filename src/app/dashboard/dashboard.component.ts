@@ -35,7 +35,7 @@ import { Router, RouterModule } from '@angular/router';
 import { environment } from '../../environments/environment';
 import { AuthService } from '../services/auth.service';
 import { DashboardService } from '../services/dashboard.service';
-import { DetailsDialogData } from '../models/dashboard.models';
+import { DetailsDialogData, OutstandingResponse } from '../models/dashboard.models';
 import { DetailsComponent } from '../details/details.component';
 import { Subject, takeUntil } from 'rxjs';
 
@@ -96,7 +96,9 @@ interface GroupUsersResponse {
 export class DashboardComponent implements OnInit, OnDestroy {
   dashboardForm: FormGroup;
   dashboardData: any = null;
+  outstandingData: OutstandingResponse | null = null;
   isLoading = false;
+  isLoadingOutstanding = false;
   showDateRange = false;
   private destroy$ = new Subject<void>();
   companyName: string = '';
@@ -386,20 +388,18 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   getSelectedCompanyName(): string {
-    if (!this.selectedCompanyId) {
-      console.log('No selectedCompanyId, returning empty string');
-      return '';
-    }
-    
     const company = this.companies.find(c => c.clientId === this.selectedCompanyId);
     if (company) {
       console.log('Found company for selectedCompanyId:', company);
       return company.name;
     }
-    
     const fallbackName = this.authService.getCompanyName();
     console.log('Company not found in array, using fallback:', fallbackName);
-    return fallbackName || `Company ID ${this.selectedCompanyId}`;
+    return fallbackName || (this.selectedCompanyId !== null && this.selectedCompanyId !== undefined ? `Company ID ${this.selectedCompanyId}` : '');
+  }
+
+  hasSelectedCompany(): boolean {
+    return this.selectedCompanyId !== null && this.selectedCompanyId !== undefined;
   }
 
   getSelectedCompanyUserCount(): number {
@@ -489,6 +489,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
             salesDetails: data?.salesDetails || []
           };
           this.isLoading = false;
+          this.loadOutstandingData(this.selectedCompanyId || 0);
           
           setTimeout(() => {
             console.log('Dashboard data after timeout:', this.dashboardData);
@@ -505,6 +506,32 @@ export class DashboardComponent implements OnInit, OnDestroy {
             duration: 3000
           });
           this.isLoading = false;
+        }
+      });
+  }
+
+  loadOutstandingData(clientId?: number): void {
+    const resolvedClientId = clientId !== null && clientId !== undefined ? clientId : (this.selectedCompanyId ?? 0);
+    this.isLoadingOutstanding = true;
+    this.outstandingData = null;
+
+    this.dashboardService.getOutstandingBalances(resolvedClientId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data) => {
+          console.log('✅ Outstanding balances loaded successfully:', data);
+          this.outstandingData = {
+            totals: data?.totals || { totalNetOutstanding: 0, totalCustomers: 0, averageOutstandingDays: 0 },
+            details: Array.isArray(data?.details) ? data.details : []
+          };
+          this.isLoadingOutstanding = false;
+        },
+        error: (error) => {
+          console.error('❌ Error loading outstanding balances:', error);
+          this.snackBar.open('Failed to load outstanding balances', 'Close', {
+            duration: 3000
+          });
+          this.isLoadingOutstanding = false;
         }
       });
   }
@@ -588,8 +615,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     return `${year}-${month}-${day}`;
   }
 
-  openDetailsDialog(type: 'purchase' | 'sales'): void {
-    if (!this.dashboardData) return;
+  openDetailsDialog(type: 'purchase' | 'sales' | 'outstanding'): void {
+    if (type !== 'outstanding' && !this.dashboardData) return;
 
     console.log('Opening details dialog for:', type);
     
@@ -598,14 +625,22 @@ export class DashboardComponent implements OnInit, OnDestroy {
       fromDate: this.selectedFromDate!,
       toDate: this.selectedToDate!,
       clientId: this.selectedCompanyId || 0,
-      summary: type === 'purchase' ? this.dashboardData.purchase : this.dashboardData.sales
+      summary: type === 'outstanding'
+        ? {
+            totalNetOutstanding: this.outstandingData?.totals.totalNetOutstanding,
+            totalCustomers: this.outstandingData?.totals.totalCustomers,
+            averageOutstandingDays: this.outstandingData?.totals.averageOutstandingDays
+          }
+        : type === 'purchase'
+          ? this.dashboardData.purchase
+          : this.dashboardData.sales
     };
 
     console.log('Dialog data:', dialogData);
 
     const dialogRef = this.dialog.open(DetailsComponent, {
-      width: '800px',
-      maxWidth: '90vw',
+      width: '900px',
+      maxWidth: '95vw',
       data: dialogData,
       panelClass: 'details-dialog-container'
     });
