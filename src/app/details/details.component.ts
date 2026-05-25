@@ -63,15 +63,13 @@ export class DetailsComponent implements OnInit, OnDestroy {
         .pipe(takeUntil(this.destroy$))
         .subscribe({
           next: (outstandingData) => {
-            this.transactionDetails = Array.isArray(outstandingData?.details) ? outstandingData.details : [];
-            if (outstandingData?.totals) {
-              this.data.summary = {
-                ...this.data.summary,
-                totalNetOutstanding: outstandingData.totals.totalNetOutstanding,
-                totalCustomers: outstandingData.totals.totalCustomers,
-                averageOutstandingDays: outstandingData.totals.averageOutstandingDays
-              };
-            }
+            this.transactionDetails = outstandingData.details;
+            this.data.summary = {
+              ...this.data.summary,
+              totalNetOutstanding: outstandingData.totals.totalNetOutstanding,
+              totalCustomers: outstandingData.totals.totalCustomers,
+              averageOutstandingDays: outstandingData.totals.averageOutstandingDays
+            };
             this.isLoading = false;
           },
           error: (err: any) => {
@@ -83,6 +81,15 @@ export class DetailsComponent implements OnInit, OnDestroy {
             this.isLoading = false;
           }
         });
+      return;
+    }
+
+    if (!this.data.fromDate || !this.data.toDate) {
+      this.snackBar.open('Date range is required for transaction details', 'Close', {
+        duration: 4000,
+        panelClass: ['error-snackbar']
+      });
+      this.isLoading = false;
       return;
     }
 
@@ -125,8 +132,13 @@ export class DetailsComponent implements OnInit, OnDestroy {
     return new Intl.NumberFormat('en-IN').format(num);
   }
 
-  formatDate(date: Date): string {
+  formatDate(date: Date | string | undefined): string {
+    if (!date) return '-';
     return new Date(date).toLocaleDateString('en-IN');
+  }
+
+  getToday(): Date {
+    return new Date();
   }
 
   getTypeTitle(): string {

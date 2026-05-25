@@ -97,6 +97,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   dashboardForm: FormGroup;
   dashboardData: any = null;
   outstandingData: OutstandingResponse | null = null;
+  outstandingAsOnDate: Date = new Date();
   isLoading = false;
   isLoadingOutstanding = false;
   showDateRange = false;
@@ -347,7 +348,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
           }
         }
         
-        this.selectedCompanyId = currentClientId ? Number(currentClientId) : 0;
+        const hasAllCompaniesOption = this.companies.some(c => c.clientId === 0);
+        this.selectedCompanyId = hasAllCompaniesOption
+          ? 0
+          : (currentClientId ? Number(currentClientId) : 0);
         
         console.log('Company Selection:');
         console.log('  Available companies:', this.companies.map(c => ({ id: c.clientId, name: c.name })));
@@ -372,6 +376,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         });
         
         this.loadTodaysData();
+        this.loadOutstandingData(this.selectedCompanyId || 0);
         
       } else {
         console.warn('UserGroupId not found in token');
@@ -436,6 +441,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
     
     this.loadSelectedData();
+    this.loadOutstandingData(this.selectedCompanyId || 0);
   }
 
   loadSelectedData(): void {
@@ -489,7 +495,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
             salesDetails: data?.salesDetails || []
           };
           this.isLoading = false;
-          this.loadOutstandingData(this.selectedCompanyId || 0);
           
           setTimeout(() => {
             console.log('Dashboard data after timeout:', this.dashboardData);
@@ -520,17 +525,43 @@ export class DashboardComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (data) => {
           console.log('✅ Outstanding balances loaded successfully:', data);
-          this.outstandingData = {
-            totals: data?.totals || { totalNetOutstanding: 0, totalCustomers: 0, averageOutstandingDays: 0 },
-            details: Array.isArray(data?.details) ? data.details : []
-          };
+
+          if (resolvedClientId > 0 && data.details.length === 0 && this.currentUserGroupId) {
+            this.dashboardService.getOutstandingBalances(0)
+              .pipe(takeUntil(this.destroy$))
+              .subscribe({
+                next: (groupData) => {
+                  if (groupData.details.length > 0) {
+                    this.outstandingData = groupData;
+                    this.snackBar.open(
+                      'No outstanding for selected company — showing all companies in your group',
+                      'Close',
+                      { duration: 4000 }
+                    );
+                  } else {
+                    this.outstandingData = data;
+                  }
+                  this.outstandingAsOnDate = new Date();
+                  this.isLoadingOutstanding = false;
+                },
+                error: () => {
+                  this.outstandingData = data;
+                  this.outstandingAsOnDate = new Date();
+                  this.isLoadingOutstanding = false;
+                }
+              });
+            return;
+          }
+
+          this.outstandingData = data;
+          this.outstandingAsOnDate = new Date();
           this.isLoadingOutstanding = false;
         },
         error: (error) => {
           console.error('❌ Error loading outstanding balances:', error);
-          this.snackBar.open('Failed to load outstanding balances', 'Close', {
-            duration: 3000
-          });
+          const message = error.error?.error
+            || (error.status === 404 ? 'Outstanding API not found on server — deploy latest API' : 'Failed to load outstanding balances');
+          this.snackBar.open(message, 'Close', { duration: 4000 });
           this.isLoadingOutstanding = false;
         }
       });
@@ -622,9 +653,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     
     const dialogData: DetailsDialogData = {
       type: type,
-      fromDate: this.selectedFromDate!,
-      toDate: this.selectedToDate!,
       clientId: this.selectedCompanyId || 0,
+      companyName: this.getSelectedCompanyName(),
       summary: type === 'outstanding'
         ? {
             totalNetOutstanding: this.outstandingData?.totals.totalNetOutstanding,
@@ -635,6 +665,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
           ? this.dashboardData.purchase
           : this.dashboardData.sales
     };
+
+    if (type === 'outstanding') {
+      dialogData.asOnDate = this.outstandingAsOnDate;
+    } else {
+      dialogData.fromDate = this.selectedFromDate!;
+      dialogData.toDate = this.selectedToDate!;
+    }
 
     console.log('Dialog data:', dialogData);
 

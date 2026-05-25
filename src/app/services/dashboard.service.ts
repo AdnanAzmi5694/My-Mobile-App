@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, firstValueFrom } from 'rxjs';
+import { Observable, firstValueFrom, map } from 'rxjs';
 import { AuthService } from './auth.service';
-import { DashboardSummary, TransactionDetail } from '../models/dashboard.models';
+import { OutstandingResponse } from '../models/dashboard.models';
 import { environment } from '../../environments/environment';
 
 
@@ -80,15 +80,48 @@ export class DashboardService {
     });
   }
 
-  getOutstandingBalances(clientId: number = 0): Observable<any> {
+  getOutstandingBalances(clientId: number = 0): Observable<OutstandingResponse> {
     const params: any = {};
     if (clientId !== null && clientId !== undefined) {
       params.clientId = clientId.toString();
     }
-    return this.http.get(`${this.outstandingBaseUrl}`, {
+    return this.http.get<any>(`${this.outstandingBaseUrl}`, {
       headers: this.getHeaders(),
       params
-    });
+    }).pipe(map((response) => this.normalizeOutstandingResponse(response)));
+  }
+
+  /** Accept camelCase or PascalCase API payloads (local vs deployed servers). */
+  normalizeOutstandingResponse(response: any): OutstandingResponse {
+    const emptyTotals = {
+      totalNetOutstanding: 0,
+      totalCustomers: 0,
+      averageOutstandingDays: 0
+    };
+
+    if (response == null) {
+      return { totals: emptyTotals, details: [] };
+    }
+
+    const totalsRaw = response.totals ?? response.Totals ?? {};
+    const detailsRaw = response.details ?? response.Details ?? [];
+
+    const details = (Array.isArray(detailsRaw) ? detailsRaw : []).map((row: any) => ({
+      customerId: row.customerId ?? row.CustomerId ?? 0,
+      customerName: row.customerName ?? row.CustomerName ?? '',
+      customerMobile: row.customerMobile ?? row.CustomerMobile ?? null,
+      netOutstanding: Number(row.netOutstanding ?? row.NetOutstanding ?? 0),
+      avgOutstandingDays: Number(row.avgOutstandingDays ?? row.AvgOutstandingDays ?? 0)
+    }));
+
+    return {
+      totals: {
+        totalNetOutstanding: Number(totalsRaw.totalNetOutstanding ?? totalsRaw.TotalNetOutstanding ?? 0),
+        totalCustomers: Number(totalsRaw.totalCustomers ?? totalsRaw.TotalCustomers ?? 0),
+        averageOutstandingDays: Number(totalsRaw.averageOutstandingDays ?? totalsRaw.AverageOutstandingDays ?? 0)
+      },
+      details
+    };
   }
 
   getAlterationRecords(): Observable<any> {

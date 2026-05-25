@@ -10,6 +10,17 @@
         <mat-icon>close</mat-icon>
       </button>
     </div>
+
+    <div class="date-context" *ngIf="data.type !== 'outstanding'">
+      <mat-icon>date_range</mat-icon>
+      <span>Period: {{ formatDate(data.fromDate!) }} – {{ formatDate(data.toDate!) }}</span>
+    </div>
+    <div class="date-context" *ngIf="data.type === 'outstanding'">
+      <mat-icon>today</mat-icon>
+      <span>As on Date: {{ formatDate(data.asOnDate || getToday()) }}</span>
+      <span class="date-context-sep" *ngIf="data.companyName">|</span>
+      <span *ngIf="data.companyName">{{ data.companyName }}</span>
+    </div>
     
     <!-- Summary Info -->
     <div class="summary-info" *ngIf="data.type !== 'outstanding'">
@@ -47,7 +58,7 @@
     <!-- Loading State -->
     <div *ngIf="isLoading" class="loading-container">
       <mat-spinner diameter="40"></mat-spinner>
-      <p>Loading transaction details...</p>
+      <p>Loading {{ data.type === 'outstanding' ? 'outstanding balances' : 'transaction details' }}...</p>
     </div>
 
     <!-- No Data State -->
@@ -56,7 +67,7 @@
       <h3 *ngIf="data.type !== 'outstanding'">No {{ getTypeTitle() }} Transactions</h3>
       <h3 *ngIf="data.type === 'outstanding'">No Outstanding Balances</h3>
       <p *ngIf="data.type !== 'outstanding'">No {{ getTypeTitle().toLowerCase() }} transactions found for the selected date range.</p>
-      <p *ngIf="data.type === 'outstanding'">No outstanding customer balances found for the selected client.</p>
+      <p *ngIf="data.type === 'outstanding'">No outstanding customer balances found for the selected company as on this date.</p>
     </div>
 
     <!-- Transaction Table -->

@@ -346,123 +346,31 @@
   margin-bottom: 24px;
 }
 
-.outstanding-section {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  padding: 24px;
+.outstanding-icon {
+  color: #f39c12;
+}
+
+.summary-card.outstanding-card::before {
+  background: linear-gradient(90deg, #f39c12 0%, #e67e22 100%);
+}
+
+.refresh-btn {
+  color: #7f8c8d;
+
+  &:hover:not([disabled]) {
+    color: #3498db;
+  }
+}
+
+.card-stats-loading {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-}
-
-.outstanding-header {
-  display: flex;
-  justify-content: space-between;
   align-items: center;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-
-.outstanding-title {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin: 0;
-  font-size: 1.6rem;
-  color: #2c3e50;
-}
-
-.outstanding-subtitle {
-  margin: 4px 0 0 0;
-  color: #7f8c8d;
-  font-size: 0.95rem;
-}
-
-.outstanding-loading {
-  display: flex;
-  align-items: center;
+  justify-content: center;
   gap: 12px;
-  color: #2c3e50;
-  font-weight: 500;
-}
-
-.outstanding-body {
-  display: flex;
-  flex-direction: column;
-  gap: 22px;
-}
-
-.outstanding-card-row {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 16px;
-}
-
-.outstanding-card {
-  border-radius: 12px;
-  padding: 18px;
-  min-height: 120px;
-}
-
-.outstanding-card.total-card {
-  background: #eef7ff;
-}
-
-.outstanding-card.customer-card {
-  background: #f3f9f1;
-}
-
-.outstanding-card.average-card {
-  background: #fff4e5;
-}
-
-.outstanding-card .card-label {
+  min-height: 140px;
   color: #7f8c8d;
-  font-size: 0.95rem;
-  margin-bottom: 10px;
-}
-
-.outstanding-card .card-value {
-  font-size: 1.7rem;
-  font-weight: 700;
-  color: #2c3e50;
-}
-
-.outstanding-table-container {
-  overflow-x: auto;
-}
-
-.outstanding-table {
-  width: 100%;
-  border-collapse: collapse;
-  min-width: 720px;
-}
-
-.outstanding-table th,
-.outstanding-table td {
-  text-align: left;
-  padding: 14px 16px;
-  border-bottom: 1px solid #ecf0f1;
-}
-
-.outstanding-table th {
-  background: #f8f9fa;
-  color: #2c3e50;
-  font-weight: 600;
-}
-
-.outstanding-table tr:hover {
-  background: #f9fbfd;
-}
-
-.outstanding-table td {
-  color: #4a4a4a;
-}
-
-.outstanding-table td:last-child,
-.outstanding-table th:last-child {
-  text-align: right;
+  font-weight: 500;
 }
 
 .summary-header {
@@ -570,6 +478,13 @@
   font-weight: 500;
   color: #2c3e50;
   flex: 1;
+}
+
+.card-date-note {
+  margin: -8px 0 12px 0;
+  font-size: 0.85rem;
+  color: #7f8c8d;
+  font-weight: 500;
 }
 
 .card-stats {

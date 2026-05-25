@@ -22,9 +22,12 @@ export interface TransactionDetail {
 
 export interface DetailsDialogData {
   type: 'purchase' | 'sales' | 'outstanding';
-  fromDate: Date;
-  toDate: Date;
+  fromDate?: Date;
+  toDate?: Date;
+  /** Outstanding balances are a snapshot as on this date (not a from–to range). */
+  asOnDate?: Date;
   clientId: number;
+  companyName?: string;
   summary: {
     totalBills?: number;
     totalQuantity?: number;

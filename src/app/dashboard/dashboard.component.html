@@ -197,7 +197,7 @@
           <mat-icon>analytics</mat-icon>
           Summary Overview
         </h2>
-        <p class="summary-subtitle">Click on any card to view detailed transactions</p>
+        <p class="summary-subtitle">Sales &amp; purchase use the date range above. Outstanding is shown as on today’s date.</p>
       </div>
       
       <div class="summary-row">
@@ -256,86 +256,60 @@
             </div>
           </mat-card-content>
         </mat-card>
-      </div>
-    </div>
-  </div>
 
-  <div class="outstanding-section" *ngIf="!isLoading">
-    <div class="outstanding-header">
-      <div>
-        <h2 class="outstanding-title">
-          <mat-icon>account_balance_wallet</mat-icon>
-          Outstanding Balances
-        </h2>
-        <p class="outstanding-subtitle">
-          Totals first, then customer-level details ordered by net outstanding.
-        </p>
-      </div>
-      <button mat-stroked-button color="primary" (click)="loadOutstandingData()" [disabled]="isLoadingOutstanding">
-        <mat-icon>refresh</mat-icon>
-        Refresh Outstanding
-      </button>
-    </div>
-
-    <div *ngIf="isLoadingOutstanding" class="outstanding-loading">
-      <mat-spinner diameter="28"></mat-spinner>
-      <span>Loading outstanding balances...</span>
-    </div>
-
-    <div *ngIf="!isLoadingOutstanding && outstandingData" class="outstanding-body">
-      <div class="outstanding-card-row">
-        <mat-card class="outstanding-card total-card summary-card" (click)="openDetailsDialog('outstanding')">
+        <!-- Outstanding Summary Card -->
+        <mat-card class="summary-card outstanding-card" (click)="openDetailsDialog('outstanding')">
           <mat-card-content>
-            <div class="card-label">Total Net Outstanding</div>
-            <div class="card-value">{{ formatCurrency(outstandingData.totals.totalNetOutstanding) }}</div>
-            <div class="card-footer"><span>Click to view details</span></div>
+            <div class="card-header">
+              <mat-icon class="card-icon outstanding-icon">account_balance_wallet</mat-icon>
+              <h3 class="card-title">Outstanding Summary</h3>
+              <button
+                mat-icon-button
+                class="refresh-btn"
+                (click)="loadOutstandingData(); $event.stopPropagation()"
+                [disabled]="isLoadingOutstanding"
+                aria-label="Refresh outstanding">
+                <mat-icon>{{ isLoadingOutstanding ? 'hourglass_empty' : 'refresh' }}</mat-icon>
+              </button>
+            </div>
+            <p class="card-date-note">As on Date: {{ outstandingAsOnDate | date:'dd/MM/yyyy' }}</p>
+            <div class="card-stats" *ngIf="!isLoadingOutstanding && outstandingData">
+              <div class="stat-item">
+                <span class="stat-label">Total Net Outstanding</span>
+                <span class="stat-value">{{ formatCurrency(outstandingData.totals.totalNetOutstanding) }}</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">Total Customers</span>
+                <span class="stat-value">{{ formatNumber(outstandingData.totals.totalCustomers) }}</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">Average Outstanding Days</span>
+                <span class="stat-value">{{ outstandingData.totals.averageOutstandingDays | number:'1.1-2' }}</span>
+              </div>
+            </div>
+            <div class="card-stats card-stats-loading" *ngIf="isLoadingOutstanding">
+              <mat-spinner diameter="32"></mat-spinner>
+              <span>Loading outstanding...</span>
+            </div>
+            <div class="card-stats" *ngIf="!isLoadingOutstanding && !outstandingData">
+              <div class="stat-item">
+                <span class="stat-label">Total Net Outstanding</span>
+                <span class="stat-value">{{ formatCurrency(0) }}</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">Total Customers</span>
+                <span class="stat-value">0</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">Average Outstanding Days</span>
+                <span class="stat-value">0</span>
+              </div>
+            </div>
+            <div class="card-footer">
+              <span class="click-text">Click to view details</span>
+            </div>
           </mat-card-content>
         </mat-card>
-
-        <mat-card class="outstanding-card customer-card summary-card" (click)="openDetailsDialog('outstanding')">
-          <mat-card-content>
-            <div class="card-label">Total Customers</div>
-            <div class="card-value">{{ formatNumber(outstandingData.totals.totalCustomers) }}</div>
-            <div class="card-footer"><span>Click to view details</span></div>
-          </mat-card-content>
-        </mat-card>
-
-        <mat-card class="outstanding-card average-card summary-card" (click)="openDetailsDialog('outstanding')">
-          <mat-card-content>
-            <div class="card-label">Average Outstanding Days</div>
-            <div class="card-value">{{ outstandingData.totals.averageOutstandingDays | number:'1.1-2' }}</div>
-            <div class="card-footer"><span>Click to view details</span></div>
-          </mat-card-content>
-        </mat-card>
-      </div>
-
-      <div *ngIf="outstandingData.details.length > 0" class="outstanding-table-container">
-        <table class="outstanding-table">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Customer</th>
-              <th>Mobile</th>
-              <th>Net Outstanding</th>
-              <th>Avg Days</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let row of outstandingData.details">
-              <td>{{ row.customerId }}</td>
-              <td>{{ row.customerName }}</td>
-              <td>{{ row.customerMobile || '-' }}</td>
-              <td>{{ formatCurrency(row.netOutstanding) }}</td>
-              <td>{{ row.avgOutstandingDays }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div *ngIf="outstandingData.details.length === 0" class="no-data-container">
-        <mat-icon class="no-data-icon">hourglass_empty</mat-icon>
-        <h3>No Outstanding Records</h3>
-        <p>No outstanding customer balances were returned for the selected client.</p>
       </div>
     </div>
   </div>
