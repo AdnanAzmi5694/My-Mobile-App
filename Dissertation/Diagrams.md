@@ -79,7 +79,7 @@ erDiagram
 
     COMPANY {
         int CompanyId PK
-        long ClientId AK "unique alternate key"
+        long ClientId UK "unique alternate key"
         string Name
         string GstNumber
         string City
