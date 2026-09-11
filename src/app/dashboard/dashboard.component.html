@@ -197,7 +197,7 @@
           <mat-icon>analytics</mat-icon>
           Summary Overview
         </h2>
-        <p class="summary-subtitle">Sales &amp; purchase use the date range above. Outstanding is shown as on today’s date.</p>
+        <p class="summary-subtitle">Sales &amp; purchase use the date range above. Outstanding and collection are shown for the selected company.</p>
       </div>
       
       <div class="summary-row">
@@ -303,6 +303,52 @@
               <div class="stat-item">
                 <span class="stat-label">Average Outstanding Days</span>
                 <span class="stat-value">0</span>
+              </div>
+            </div>
+            <div class="card-footer">
+              <span class="click-text">Click to view details</span>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Collection Summary Card -->
+        <mat-card class="summary-card collection-card" (click)="openDetailsDialog('collection')">
+          <mat-card-content>
+            <div class="card-header">
+              <mat-icon class="card-icon collection-icon">receipt_long</mat-icon>
+              <h3 class="card-title">Receipt Collection</h3>
+              <button
+                mat-icon-button
+                class="refresh-btn"
+                (click)="loadCollectionData(); $event.stopPropagation()"
+                [disabled]="isLoadingCollection"
+                aria-label="Refresh collection">
+                <mat-icon>{{ isLoadingCollection ? 'hourglass_empty' : 'refresh' }}</mat-icon>
+              </button>
+            </div>
+            <p class="card-date-note">As on Date: {{ collectionAsOnDate | date:'dd/MM/yyyy' }}</p>
+            <div class="card-stats" *ngIf="!isLoadingCollection && collectionData">
+              <div class="stat-item">
+                <span class="stat-label">Total Receipts</span>
+                <span class="stat-value">{{ formatNumber(collectionData.totalTransactions) }}</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">Total Collection Amount</span>
+                <span class="stat-value">{{ formatCurrency(collectionData.totalAmount) }}</span>
+              </div>
+            </div>
+            <div class="card-stats card-stats-loading" *ngIf="isLoadingCollection">
+              <mat-spinner diameter="32"></mat-spinner>
+              <span>Loading collection...</span>
+            </div>
+            <div class="card-stats" *ngIf="!isLoadingCollection && !collectionData">
+              <div class="stat-item">
+                <span class="stat-label">Total Receipts</span>
+                <span class="stat-value">0</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">Total Collection Amount</span>
+                <span class="stat-value">{{ formatCurrency(0) }}</span>
               </div>
             </div>
             <div class="card-footer">

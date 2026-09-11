@@ -1,0 +1,96 @@
+.collection-container {
+  min-height: 100vh;
+  padding: 20px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+.header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.page-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.page-subtitle {
+  margin: 6px 0 0;
+  color: #666;
+}
+
+.header-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.filter-card,
+.groups-card {
+  margin-bottom: 20px;
+}
+
+.company-field {
+  min-width: 280px;
+}
+
+.company-note {
+  margin: 0;
+  color: #555;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 40px;
+}
+
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.summary-card .card-label {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.summary-card .card-value {
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin-top: 8px;
+}
+
+.amount-card .card-value {
+  color: #1565c0;
+}
+
+.groups-table {
+  width: 100%;
+}
+
+.clickable-row {
+  cursor: pointer;
+}
+
+.clickable-row:hover {
+  background: #f5f9ff;
+}
+
+.no-data {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #666;
+  padding: 16px 0;
+}

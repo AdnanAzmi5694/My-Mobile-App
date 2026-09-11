@@ -4,6 +4,7 @@ import { SignUpComponent } from './sign-up/sign-up.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { DetailsComponent } from './details/details.component';
 import { JobberAlterationComponent } from './jobber-alteration/jobber-alteration.component';
+import { CollectionComponent } from './collection/collection.component';
 //import { SalesDetailComponent } from './sales-detail/sales-detail.component';
 export const routes: Routes = [
   {
@@ -26,5 +27,6 @@ export const routes: Routes = [
   { path: 'dashboard', component: DashboardComponent }, // ✅ Must be here
   { path: 'details', component: DetailsComponent },
   { path: 'jobber-alteration', component: JobberAlterationComponent },
+  { path: 'collection', component: CollectionComponent },
 // { path: 'SalesDetail' , component : SalesDetailComponent},
 ];

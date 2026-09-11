@@ -1,0 +1,83 @@
+<div class="collection-details-dialog">
+  <div class="dialog-header">
+    <div>
+      <h2>
+        <mat-icon>receipt_long</mat-icon>
+        {{ data.paymentSubType }} Receipts
+      </h2>
+      <p class="subtitle" *ngIf="data.companyName">{{ data.companyName }}</p>
+      <p class="meta">
+        {{ data.group.transactionCount }} transactions ·
+        {{ formatCurrency(data.group.totalAmount) }}
+      </p>
+    </div>
+    <button mat-icon-button (click)="closeDialog()" aria-label="Close">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <div *ngIf="isLoading" class="loading">
+    <mat-spinner diameter="40"></mat-spinner>
+    <span>Loading receipts...</span>
+  </div>
+
+  <div *ngIf="!isLoading" class="table-wrap">
+    <table mat-table [dataSource]="rows" class="details-table">
+      <ng-container matColumnDef="receiptDocNo">
+        <th mat-header-cell *matHeaderCellDef>Receipt No</th>
+        <td mat-cell *matCellDef="let row">{{ row.receiptDocNo || '-' }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="receiptDocDate">
+        <th mat-header-cell *matHeaderCellDef>Date</th>
+        <td mat-cell *matCellDef="let row">{{ formatDate(row.receiptDocDate) }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="customerName">
+        <th mat-header-cell *matHeaderCellDef>Customer</th>
+        <td mat-cell *matCellDef="let row">{{ row.customerName || '-' }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="customerMobileNo">
+        <th mat-header-cell *matHeaderCellDef>Mobile</th>
+        <td mat-cell *matCellDef="let row">{{ row.customerMobileNo || '-' }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="receiptAmount">
+        <th mat-header-cell *matHeaderCellDef>Amount</th>
+        <td mat-cell *matCellDef="let row">{{ formatCurrency(row.receiptAmount) }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="purchaseDocNo">
+        <th mat-header-cell *matHeaderCellDef>Purchase Ref</th>
+        <td mat-cell *matCellDef="let row">{{ row.purchaseDocNo || '-' }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="purchaseDocDate">
+        <th mat-header-cell *matHeaderCellDef>Pur. Date</th>
+        <td mat-cell *matCellDef="let row">{{ formatDate(row.purchaseDocDate) }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="receiptType">
+        <th mat-header-cell *matHeaderCellDef>Type</th>
+        <td mat-cell *matCellDef="let row">{{ row.receiptType || '-' }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="receiptNotes">
+        <th mat-header-cell *matHeaderCellDef>Notes</th>
+        <td mat-cell *matCellDef="let row">{{ row.receiptNotes || '-' }}</td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+    </table>
+
+    <mat-paginator
+      [length]="total"
+      [pageSize]="pageSize"
+      [pageIndex]="pageIndex"
+      [pageSizeOptions]="[10, 25, 50, 100]"
+      (page)="onPageChange($event)">
+    </mat-paginator>
+  </div>
+</div>

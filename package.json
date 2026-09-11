@@ -7,7 +7,10 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "serve:ssr:my-mobile-app": "node dist/my-mobile-app/server/server.mjs"
+    "serve:ssr:my-mobile-app": "node dist/my-mobile-app/server/server.mjs",
+    "cap:build": "ng build && npx cap sync",
+    "cap:sync": "npx cap sync",
+    "cap:open:android": "npx cap open android"
   },
   "private": true,
   "dependencies": {

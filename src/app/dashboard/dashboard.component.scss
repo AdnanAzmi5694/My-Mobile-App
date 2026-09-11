@@ -354,6 +354,14 @@
   background: linear-gradient(90deg, #f39c12 0%, #e67e22 100%);
 }
 
+.summary-card.collection-card::before {
+  background: linear-gradient(90deg, #1565c0 0%, #42a5f5 100%);
+}
+
+.collection-icon {
+  color: #1565c0;
+}
+
 .refresh-btn {
   color: #7f8c8d;
 

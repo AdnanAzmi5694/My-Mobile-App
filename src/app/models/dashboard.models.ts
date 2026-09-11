@@ -21,10 +21,10 @@ export interface TransactionDetail {
 }
 
 export interface DetailsDialogData {
-  type: 'purchase' | 'sales' | 'outstanding';
+  type: 'purchase' | 'sales' | 'outstanding' | 'collection';
   fromDate?: Date;
   toDate?: Date;
-  /** Outstanding balances are a snapshot as on this date (not a from–to range). */
+  /** Outstanding and collection balances are a snapshot as on this date (not a from–to range). */
   asOnDate?: Date;
   clientId: number;
   companyName?: string;
@@ -35,6 +35,8 @@ export interface DetailsDialogData {
     totalNetOutstanding?: number;
     totalCustomers?: number;
     averageOutstandingDays?: number;
+    totalTransactions?: number;
+    totalCollectionAmount?: number;
   };
 }
 
@@ -89,4 +91,44 @@ export interface AlterationRecord {
 export interface AlterationDetailsDialogData {
   record: AlterationRecord;
   type: 'pending' | 'received' | 'delivered';
+}
+
+export interface CollectionSummary {
+  totalTransactions: number;
+  totalAmount: number;
+}
+
+export interface CollectionGroup {
+  paymentSubType: string;
+  transactionCount: number;
+  totalAmount: number;
+}
+
+export interface CollectionDetail {
+  receiptDocNo: string | null;
+  receiptDocDate: string | Date | null;
+  receiptAmount: number;
+  receiptRefPurID: number | null;
+  purchaseDocNo: string | null;
+  purchaseDocDate: string | Date | null;
+  receiptCustomerId: number | null;
+  customerName: string | null;
+  customerMobileNo: string | null;
+  receiptType: string | null;
+  receiptNotes: string | null;
+  receiptPaymentSubTypeName: string | null;
+}
+
+export interface CollectionPagedResult {
+  total: number;
+  page: number;
+  pageSize: number;
+  data: CollectionDetail[];
+}
+
+export interface CollectionDetailsDialogData {
+  clientId: number;
+  paymentSubType: string;
+  companyName?: string;
+  group: CollectionGroup;
 }

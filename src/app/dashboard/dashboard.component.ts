@@ -35,7 +35,8 @@ import { Router, RouterModule } from '@angular/router';
 import { environment } from '../../environments/environment';
 import { AuthService } from '../services/auth.service';
 import { DashboardService } from '../services/dashboard.service';
-import { DetailsDialogData, OutstandingResponse } from '../models/dashboard.models';
+import { CollectionService } from '../services/collection.service';
+import { DetailsDialogData, OutstandingResponse, CollectionSummary } from '../models/dashboard.models';
 import { DetailsComponent } from '../details/details.component';
 import { Subject, takeUntil } from 'rxjs';
 
@@ -97,9 +98,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
   dashboardForm: FormGroup;
   dashboardData: any = null;
   outstandingData: OutstandingResponse | null = null;
+  collectionData: CollectionSummary | null = null;
   outstandingAsOnDate: Date = new Date();
+  collectionAsOnDate: Date = new Date();
   isLoading = false;
   isLoadingOutstanding = false;
+  isLoadingCollection = false;
   showDateRange = false;
   private destroy$ = new Subject<void>();
   companyName: string = '';
@@ -117,6 +121,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   constructor(
     private fb: FormBuilder,
     private dashboardService: DashboardService,
+    private collectionService: CollectionService,
     private authService: AuthService,
     private snackBar: MatSnackBar,
     private router: Router,
@@ -377,6 +382,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         
         this.loadTodaysData();
         this.loadOutstandingData(this.selectedCompanyId || 0);
+        this.loadCollectionData(this.selectedCompanyId || 0);
         
       } else {
         console.warn('UserGroupId not found in token');
@@ -442,6 +448,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     
     this.loadSelectedData();
     this.loadOutstandingData(this.selectedCompanyId || 0);
+    this.loadCollectionData(this.selectedCompanyId || 0);
   }
 
   loadSelectedData(): void {
@@ -567,6 +574,33 @@ export class DashboardComponent implements OnInit, OnDestroy {
       });
   }
 
+  loadCollectionData(clientId?: number): void {
+    const resolvedClientId = clientId !== null && clientId !== undefined ? clientId : (this.selectedCompanyId ?? 0);
+    this.isLoadingCollection = true;
+    this.collectionData = null;
+
+    this.collectionService.getSummary(resolvedClientId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data) => {
+          this.collectionData = data;
+          this.collectionAsOnDate = new Date();
+          this.isLoadingCollection = false;
+        },
+        error: (error) => {
+          console.error('Error loading collection summary:', error);
+          const message = error.error?.error
+            || (error.status === 404 ? 'Collection API not found on server — deploy latest API' : 'Failed to load collection summary');
+          this.snackBar.open(message, 'Close', { duration: 4000 });
+          this.isLoadingCollection = false;
+        }
+      });
+  }
+
+  openCollectionPage(): void {
+    this.openDetailsDialog('collection');
+  }
+
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
@@ -646,8 +680,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     return `${year}-${month}-${day}`;
   }
 
-  openDetailsDialog(type: 'purchase' | 'sales' | 'outstanding'): void {
-    if (type !== 'outstanding' && !this.dashboardData) return;
+  openDetailsDialog(type: 'purchase' | 'sales' | 'outstanding' | 'collection'): void {
+    if (type !== 'outstanding' && type !== 'collection' && !this.dashboardData) return;
 
     console.log('Opening details dialog for:', type);
     
@@ -661,6 +695,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
             totalCustomers: this.outstandingData?.totals.totalCustomers,
             averageOutstandingDays: this.outstandingData?.totals.averageOutstandingDays
           }
+        : type === 'collection'
+          ? {
+              totalTransactions: this.collectionData?.totalTransactions,
+              totalCollectionAmount: this.collectionData?.totalAmount
+            }
         : type === 'purchase'
           ? this.dashboardData.purchase
           : this.dashboardData.sales
@@ -668,6 +707,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     if (type === 'outstanding') {
       dialogData.asOnDate = this.outstandingAsOnDate;
+    } else if (type === 'collection') {
+      dialogData.asOnDate = this.collectionAsOnDate;
     } else {
       dialogData.fromDate = this.selectedFromDate!;
       dialogData.toDate = this.selectedToDate!;

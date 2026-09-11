@@ -4,13 +4,14 @@ import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTableModule } from '@angular/material/table';
-import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatSortModule } from '@angular/material/sort';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { DashboardService } from '../services/dashboard.service';
-import { TransactionDetail, DetailsDialogData as DialogData } from '../models/dashboard.models';
+import { CollectionService } from '../services/collection.service';
+import { DetailsDialogData as DialogData } from '../models/dashboard.models';
 import { Subject, takeUntil } from 'rxjs';
 
 @Component({
@@ -35,19 +36,38 @@ export class DetailsComponent implements OnInit, OnDestroy {
   transactionDetails: any[] = [];
   isLoading = false;
   displayedColumns: string[] = ['docNo', 'docDate', 'quantity', 'amount'];
+  collectionTotal = 0;
+  collectionPageSize = 50;
+  collectionPageIndex = 0;
   private destroy$ = new Subject<void>();
 
   constructor(
     private dashboardService: DashboardService,
+    private collectionService: CollectionService,
     private snackBar: MatSnackBar,
     public dialogRef: MatDialogRef<DetailsComponent>,
     @Inject(MAT_DIALOG_DATA) public data: DialogData
   ) {}
 
   ngOnInit(): void {
-    this.displayedColumns = this.data.type === 'outstanding'
-      ? ['customerId', 'customerName', 'customerMobile', 'netOutstanding', 'avgOutstandingDays']
-      : ['docNo', 'docDate', 'quantity', 'amount'];
+    if (this.data.type === 'outstanding') {
+      this.displayedColumns = ['customerId', 'customerName', 'customerMobile', 'netOutstanding', 'avgOutstandingDays'];
+    } else if (this.data.type === 'collection') {
+      this.displayedColumns = [
+        'receiptDocNo',
+        'receiptDocDate',
+        'customerName',
+        'customerMobileNo',
+        'receiptPaymentSubTypeName',
+        'receiptAmount',
+        'purchaseDocNo',
+        'purchaseDocDate',
+        'receiptType',
+        'receiptNotes'
+      ];
+    } else {
+      this.displayedColumns = ['docNo', 'docDate', 'quantity', 'amount'];
+    }
     this.loadTransactionDetails();
   }
 
@@ -56,7 +76,7 @@ export class DetailsComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  loadTransactionDetails(): void {
+  loadTransactionDetails(page = 1): void {
     this.isLoading = true;
     if (this.data.type === 'outstanding') {
       this.dashboardService.getOutstandingBalances(this.data.clientId)
@@ -74,6 +94,34 @@ export class DetailsComponent implements OnInit, OnDestroy {
           },
           error: (err: any) => {
             const message = err.error?.error || 'Failed to load outstanding details';
+            this.snackBar.open(message, 'Close', {
+              duration: 4000,
+              panelClass: ['error-snackbar']
+            });
+            this.isLoading = false;
+          }
+        });
+      return;
+    }
+
+    if (this.data.type === 'collection') {
+      this.collectionPageIndex = page - 1;
+      this.collectionService.getDetails(this.data.clientId, '', page, this.collectionPageSize)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (collectionData) => {
+            this.transactionDetails = collectionData.data;
+            this.collectionTotal = collectionData.total;
+            this.collectionPageSize = collectionData.pageSize;
+            this.data.summary = {
+              ...this.data.summary,
+              totalTransactions: collectionData.total,
+              totalCollectionAmount: this.data.summary.totalCollectionAmount
+            };
+            this.isLoading = false;
+          },
+          error: (err: any) => {
+            const message = err.error?.error || 'Failed to load receipt details';
             this.snackBar.open(message, 'Close', {
               duration: 4000,
               panelClass: ['error-snackbar']
@@ -141,21 +189,33 @@ export class DetailsComponent implements OnInit, OnDestroy {
     return new Date();
   }
 
+  onCollectionPageChange(event: PageEvent): void {
+    this.collectionPageSize = event.pageSize;
+    this.loadTransactionDetails(event.pageIndex + 1);
+  }
+
+  isSnapshotType(): boolean {
+    return this.data.type === 'outstanding' || this.data.type === 'collection';
+  }
+
   getTypeTitle(): string {
     if (this.data.type === 'purchase') return 'Purchase';
     if (this.data.type === 'sales') return 'Sales';
+    if (this.data.type === 'collection') return 'Receipt Collection';
     return 'Outstanding';
   }
 
   getTypeIcon(): string {
     if (this.data.type === 'purchase') return 'shopping_cart';
     if (this.data.type === 'sales') return 'point_of_sale';
+    if (this.data.type === 'collection') return 'receipt_long';
     return 'account_balance_wallet';
   }
 
   getTypeColor(): string {
     if (this.data.type === 'purchase') return '#e74c3c';
     if (this.data.type === 'sales') return '#27ae60';
+    if (this.data.type === 'collection') return '#1565c0';
     return '#ffb300';
   }
 } 

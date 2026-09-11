@@ -1,0 +1,316 @@
+{
+  "info": {
+    "name": "RMagic API",
+    "description": "RMagic Retail Operations API — import this collection in Postman.\n\nSetup:\n1. Set collection variable `baseUrl` (local: http://localhost:5232/api or production: https://api.sunscoresolutions.com/api)\n2. Run **Login** first — token is saved automatically to `token`\n3. All other requests use Bearer auth from `token`",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5232/api"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "clientId",
+      "value": "0"
+    },
+    {
+      "key": "userGroupId",
+      "value": "1"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "1. Auth",
+      "item": [
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const json = pm.response.json();",
+                  "  pm.collectionVariables.set('token', json.token);",
+                  "  if (json.userGroupId) pm.collectionVariables.set('userGroupId', String(json.userGroupId));",
+                  "  if (json.clientId !== undefined) pm.collectionVariables.set('clientId', String(json.clientId));",
+                  "  pm.test('Login successful', () => pm.expect(json.token).to.be.a('string').and.not.empty);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"your-email@example.com\",\n  \"password\": \"your-password\"\n}"
+            },
+            "url": "{{baseUrl}}/User/login",
+            "description": "Authenticate and get JWT token.\n\n**Body (JSON):**\n- email (required)\n- password (required, min 6 chars)\n\n**Success 200:**\n```json\n{\n  \"token\": \"eyJhbG...\",\n  \"email\": \"user@example.com\",\n  \"username\": \"admin\",\n  \"clientId\": 101,\n  \"companyName\": \"ABC Retail\",\n  \"userGroupId\": 1\n}\n```"
+          }
+        },
+        {
+          "name": "Register",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"newuser\",\n  \"email\": \"newuser@example.com\",\n  \"password\": \"password123\",\n  \"mobileNumber\": \"9876543210\"\n}"
+            },
+            "url": "{{baseUrl}}/User/register",
+            "description": "Register new user (account inactive until admin activates).\n\n**Body:** username, email, password, mobileNumber (optional)"
+          }
+        },
+        {
+          "name": "Get Users by Group",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/User/group/{{userGroupId}}",
+            "description": "Get users and companies for a user group. Requires JWT.\n\n**Path:** userGroupId — from login response\n\n**Success 200:** users[], companies[], currentUserClientId, userGroupId"
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Company",
+      "item": [
+        {
+          "name": "API Health Test (no auth)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": "{{baseUrl}}/Company/test",
+            "description": "Anonymous health check."
+          }
+        },
+        {
+          "name": "Get Companies",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/Company",
+            "description": "List companies accessible to logged-in user."
+          }
+        },
+        {
+          "name": "Add Company",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"New Company\",\n  \"clientId\": 102,\n  \"gstNumber\": \"22AAAAA0000A1Z5\",\n  \"mobileNumber\": \"9876543210\",\n  \"email\": \"company@example.com\",\n  \"state\": \"Delhi\",\n  \"city\": \"New Delhi\"\n}"
+            },
+            "url": "{{baseUrl}}/Company",
+            "description": "Add a new company. Requires JWT."
+          }
+        },
+        {
+          "name": "Company DB Test",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/Company/dbtest"
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Dashboard",
+      "item": [
+        {
+          "name": "Dashboard Summary",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/Dashboard/summary?fromdate=2026-07-01&toDate=2026-07-28&clientId={{clientId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["Dashboard", "summary"],
+              "query": [
+                { "key": "fromdate", "value": "2026-07-01", "description": "Start date (yyyy-MM-dd)" },
+                { "key": "toDate", "value": "2026-07-28", "description": "End date (yyyy-MM-dd)" },
+                { "key": "clientId", "value": "{{clientId}}", "description": "0 = all companies in group" }
+              ]
+            },
+            "description": "Sales + Purchase summary with transaction details.\n\n**Query params:**\n- fromdate (required)\n- toDate (required)\n- clientId (optional, default 0)\n\n**Success 200:**\n```json\n{\n  \"purchase\": { \"totalBills\": 10, \"totalQuantity\": 100, \"totalAmount\": 50000 },\n  \"sales\": { \"totalBills\": 15, \"totalQuantity\": 150, \"totalAmount\": 75000 },\n  \"purchaseDetails\": [{ \"docNo\": \"P001\", \"docDate\": \"2026-07-01\", \"quantity\": 10, \"amount\": 5000 }],\n  \"salesDetails\": [{ \"docNo\": \"S001\", \"docDate\": \"2026-07-01\", \"quantity\": 5, \"amount\": 2500 }]\n}\n```"
+          }
+        },
+        {
+          "name": "Dashboard DB Test",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/Dashboard/test"
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Outstanding",
+      "item": [
+        {
+          "name": "Get Outstanding",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/Outstanding?clientId={{clientId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["Outstanding"],
+              "query": [
+                { "key": "clientId", "value": "{{clientId}}", "description": "0 = all companies in group" }
+              ]
+            },
+            "description": "Customer outstanding balances (snapshot as on today).\n\n**Query:** clientId (default 0)\n\n**Success 200:**\n```json\n{\n  \"totals\": {\n    \"totalNetOutstanding\": 125000.50,\n    \"totalCustomers\": 42,\n    \"averageOutstandingDays\": 18.5\n  },\n  \"details\": [\n    {\n      \"customerId\": 1001,\n      \"customerName\": \"Rahul Sharma\",\n      \"customerMobile\": \"9876543210\",\n      \"netOutstanding\": 5000,\n      \"avgOutstandingDays\": 12\n    }\n  ]\n}\n```"
+          }
+        },
+        {
+          "name": "Outstanding DB Test",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/Outstanding/dbtest"
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Collection (Receipt)",
+      "item": [
+        {
+          "name": "Collection Summary",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/Collection/summary?clientId={{clientId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["Collection", "summary"],
+              "query": [
+                { "key": "clientId", "value": "{{clientId}}", "description": "0 = all companies in group" }
+              ]
+            },
+            "description": "Receipt collection totals.\n\n**Success 200:**\n```json\n{\n  \"totalTransactions\": 120,\n  \"totalAmount\": 350000.75\n}\n```"
+          }
+        },
+        {
+          "name": "Collection Groups (by Payment Type)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/Collection/groups?clientId={{clientId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["Collection", "groups"],
+              "query": [
+                { "key": "clientId", "value": "{{clientId}}" }
+              ]
+            },
+            "description": "Receipt totals grouped by payment subtype (Cash, UPI, Card, etc.).\n\n**Success 200:**\n```json\n[\n  {\n    \"paymentSubType\": \"Cash\",\n    \"transactionCount\": 50,\n    \"totalAmount\": 100000\n  },\n  {\n    \"paymentSubType\": \"UPI\",\n    \"transactionCount\": 70,\n    \"totalAmount\": 250000.75\n  }\n]\n```"
+          }
+        },
+        {
+          "name": "Collection Details (All Receipts)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/Collection/details?clientId={{clientId}}&paymentSubType=&page=1&pageSize=50",
+              "host": ["{{baseUrl}}"],
+              "path": ["Collection", "details"],
+              "query": [
+                { "key": "clientId", "value": "{{clientId}}" },
+                { "key": "paymentSubType", "value": "", "description": "Leave empty for ALL receipts, or set e.g. Cash, UPI" },
+                { "key": "page", "value": "1" },
+                { "key": "pageSize", "value": "50", "description": "Max 200" }
+              ]
+            },
+            "description": "Paged receipt details.\n\n**Query params:**\n- clientId (default 0)\n- paymentSubType (empty = all types, or e.g. \"Cash\", \"UPI\")\n- page (default 1)\n- pageSize (default 50, max 200)\n\n**Success 200:**\n```json\n{\n  \"total\": 120,\n  \"page\": 1,\n  \"pageSize\": 50,\n  \"data\": [\n    {\n      \"receiptDocNo\": \"R-1001\",\n      \"receiptDocDate\": \"2026-07-15T00:00:00\",\n      \"receiptAmount\": 5000,\n      \"receiptRefPurID\": 501,\n      \"purchaseDocNo\": \"P-501\",\n      \"purchaseDocDate\": \"2026-07-10T00:00:00\",\n      \"receiptCustomerId\": 1001,\n      \"customerName\": \"Rahul Sharma\",\n      \"customerMobileNo\": \"9876543210\",\n      \"receiptType\": \"Receipt\",\n      \"receiptNotes\": null,\n      \"receiptPaymentSubTypeName\": \"UPI\"\n    }\n  ]\n}\n```"
+          }
+        },
+        {
+          "name": "Collection Details (Cash Only)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/Collection/details?clientId={{clientId}}&paymentSubType=Cash&page=1&pageSize=50",
+              "host": ["{{baseUrl}}"],
+              "path": ["Collection", "details"],
+              "query": [
+                { "key": "clientId", "value": "{{clientId}}" },
+                { "key": "paymentSubType", "value": "Cash" },
+                { "key": "page", "value": "1" },
+                { "key": "pageSize", "value": "50" }
+              ]
+            },
+            "description": "Filter receipts by payment type. Use exact name from Groups API (e.g. Cash, UPI)."
+          }
+        },
+        {
+          "name": "Collection DB Test",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/Collection/dbtest"
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Jobber Alteration",
+      "item": [
+        {
+          "name": "Pending Alterations",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/JobberAlteration/pending?clientId={{clientId}}&page=1&pageSize=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["JobberAlteration", "pending"],
+              "query": [
+                { "key": "clientId", "value": "{{clientId}}" },
+                { "key": "jobberName", "value": "", "disabled": true },
+                { "key": "item", "value": "", "disabled": true },
+                { "key": "category", "value": "", "disabled": true },
+                { "key": "page", "value": "1" },
+                { "key": "pageSize", "value": "20" }
+              ]
+            },
+            "description": "Pending jobber alteration items.\n\n**Optional filters:** jobberName, item, category, clientId, page, pageSize"
+          }
+        },
+        {
+          "name": "Received Alterations",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/JobberAlteration/received?clientId={{clientId}}&page=1&pageSize=20"
+          }
+        },
+        {
+          "name": "Delivered Alterations",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/JobberAlteration/delivered?clientId={{clientId}}&page=1&pageSize=20"
+          }
+        }
+      ]
+    }
+  ]
+}
